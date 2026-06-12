@@ -503,6 +503,22 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
         }
       }
 
+      const fallbackStadias = [
+        { stadium: 'Azteca', city: 'Mexiko-Stadt' },
+        { stadium: 'MetLife Stadium', city: 'New York/New Jersey' },
+        { stadium: 'SoFi Stadium', city: 'Los Angeles' },
+        { stadium: 'Mercedes-Benz Stadium', city: 'Atlanta' },
+        { stadium: 'BC Place', city: 'Vancouver' },
+        { stadium: 'BMO Field', city: 'Toronto' },
+        { stadium: 'Hard Rock Stadium', city: 'Miami' },
+        { stadium: 'AT&T Stadium', city: 'Dallas' },
+        { stadium: 'Arrowhead Stadium', city: 'Kansas City' },
+        { stadium: 'Gillette Stadium', city: 'Boston' },
+        { stadium: 'Lincoln Financial Field', city: 'Philadelphia' },
+        { stadium: 'Lumen Field', city: 'Seattle' }
+      ];
+      const fallbackStadium = fallbackStadias[index % fallbackStadias.length];
+
       return {
         id: index + 1,
         homeTeam,
@@ -514,8 +530,8 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
         date: m.matchDateTimeUTC || m.matchDateTime,
         stage,
         group,
-        stadium: m.location?.stadiumName || 'Stadion',
-        city: m.location?.city || 'Gastgeberstadt',
+        stadium: m.location?.stadiumName || fallbackStadium.stadium,
+        city: m.location?.city || fallbackStadium.city,
         finished: m.matchIsFinished
       };
     });

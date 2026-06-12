@@ -43,7 +43,11 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   return (
     <div className={`glass-panel ${styles.card}`}>
       <div className={styles.header}>
-        <span className={styles.stageBadge}>{match.stage.replace('_', ' ')}</span>
+        <span className={styles.stageBadge}>
+          {match.stage === 'GROUP' && match.group
+            ? (lang === 'en' ? `Group ${match.group}` : lang === 'es' ? `Grupo ${match.group}` : lang === 'fr' ? `Groupe ${match.group}` : lang === 'ru' ? `Группа ${match.group}` : lang === 'uk' ? `Група ${match.group}` : `Gruppe ${match.group}`)
+            : match.stage.replace(/_/g, ' ')}
+        </span>
         <span className={styles.venue} title={`${match.stadium}, ${match.city}`}>
           {match.city}
         </span>
