@@ -5,6 +5,7 @@
   gap: 0.75rem;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .header {

@@ -83,6 +83,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     loadData();
   }, [initialMatches, teams]);
 
+  // Berechne aktuelle Tabellen
+  const standings = calculateStandings(matches, currentTeams);
+
+  // Filtere Matches nach Gruppenphase vs K.o.-Phase
+  const filteredMatches = matches.filter((m) => {
+    if (activeTab === 'GROUP') {
+      if (m.stage !== 'GROUP') return false;
+      return selectedGroup === 'ALL' || m.group === selectedGroup;
+    } else {
+      if (m.stage === 'GROUP') return false;
+      return selectedKnockoutStage === 'ALL' || m.stage === selectedKnockoutStage;
+    }
+  });
+
+
+
   const t = TRANSLATIONS[language];
 
   if (!mounted) {
@@ -106,20 +122,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       setSyncing(false);
     }
   };
-
-  // Berechne aktuelle Tabellen
-  const standings = calculateStandings(matches, currentTeams);
-
-  // Filtere Matches nach Gruppenphase vs K.o.-Phase
-  const filteredMatches = matches.filter((m) => {
-    if (activeTab === 'GROUP') {
-      if (m.stage !== 'GROUP') return false;
-      return selectedGroup === 'ALL' || m.group === selectedGroup;
-    } else {
-      if (m.stage === 'GROUP') return false;
-      return selectedKnockoutStage === 'ALL' || m.stage === selectedKnockoutStage;
-    }
-  });
 
   const groupList = ['ALL', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
   const knockoutStages: { value: Stage | 'ALL'; label: string }[] = [
