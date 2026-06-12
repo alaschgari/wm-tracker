@@ -57,7 +57,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <span>{homeTeamInfo.name}</span>
           </div>
           <div className={styles.scoreDisplay}>
-            {match.finished && match.homeScore !== null ? match.homeScore : '-'}
+            {match.homeScore !== null ? match.homeScore : '-'}
           </div>
         </div>
 
@@ -68,7 +68,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <span>{awayTeamInfo.name}</span>
           </div>
           <div className={styles.scoreDisplay}>
-            {match.finished && match.awayScore !== null ? match.awayScore : '-'}
+            {match.awayScore !== null ? match.awayScore : '-'}
           </div>
         </div>
 

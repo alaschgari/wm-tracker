@@ -80,7 +80,143 @@ export const calculateStandings = (matches: Match[], teams: Team[]): Record<stri
 };
 
 export const updateKnockoutMatches = (matches: Match[], teams: Team[]): Match[] => {
-  const updated = [...matches];
+  let updated = [...matches];
+  
+  // Wenn nur Gruppenspiele geladen wurden (z.B. 72 Spiele von der API),
+  // generieren wir die Platzhalter für die K.o.-Phase dynamically.
+  if (updated.length < 104) {
+    const knockoutStartDate = new Date('2026-06-28T18:00:00Z');
+    const STADIAS = [
+      { stadium: 'Azteca', city: 'Mexiko-Stadt' },
+      { stadium: 'MetLife Stadium', city: 'New York/New Jersey' },
+      { stadium: 'SoFi Stadium', city: 'Los Angeles' },
+      { stadium: 'Mercedes-Benz Stadium', city: 'Atlanta' },
+      { stadium: 'BC Place', city: 'Vancouver' },
+      { stadium: 'BMO Field', city: 'Toronto' },
+      { stadium: 'Hard Rock Stadium', city: 'Miami' },
+      { stadium: 'AT&T Stadium', city: 'Dallas' },
+      { stadium: 'Arrowhead Stadium', city: 'Kansas City' },
+      { stadium: 'Gillette Stadium', city: 'Boston' },
+      { stadium: 'Lincoln Financial Field', city: 'Philadelphia' },
+      { stadium: 'Lumen Field', city: 'Seattle' }
+    ];
+
+    let matchId = 73;
+
+    // Runde der 32 (Spiele 73-88)
+    for (let i = 0; i < 16; i++) {
+      const matchDate = new Date(knockoutStartDate.getTime());
+      matchDate.setDate(knockoutStartDate.getDate() + Math.floor(i / 4));
+      matchDate.setHours(17 + (i % 2) * 3);
+      const stadiumInfo = STADIAS[i % STADIAS.length];
+      updated.push({
+        id: matchId++,
+        homeTeam: `Sieger Spiel ${i * 2 + 1} (Platzhalter)`,
+        awayTeam: `Zweiter Spiel ${i * 2 + 2} (Platzhalter)`,
+        homeScore: null,
+        awayScore: null,
+        date: matchDate.toISOString(),
+        stage: 'ROUND_OF_32',
+        stadium: stadiumInfo.stadium,
+        city: stadiumInfo.city,
+        finished: false
+      });
+    }
+
+    // Achtelfinale (Spiele 89-96)
+    const r16StartDate = new Date('2026-07-04T18:00:00Z');
+    for (let i = 0; i < 8; i++) {
+      const matchDate = new Date(r16StartDate.getTime());
+      matchDate.setDate(r16StartDate.getDate() + Math.floor(i / 2));
+      matchDate.setHours(17 + (i % 2) * 3);
+      const stadiumInfo = STADIAS[(i + 4) % STADIAS.length];
+      updated.push({
+        id: matchId++,
+        homeTeam: `Sieger AF ${i * 2 + 1}`,
+        awayTeam: `Sieger AF ${i * 2 + 2}`,
+        homeScore: null,
+        awayScore: null,
+        date: matchDate.toISOString(),
+        stage: 'ROUND_OF_16',
+        stadium: stadiumInfo.stadium,
+        city: stadiumInfo.city,
+        finished: false
+      });
+    }
+
+    // Viertelfinale (Spiele 97-100)
+    const qfStartDate = new Date('2026-07-09T18:00:00Z');
+    for (let i = 0; i < 4; i++) {
+      const matchDate = new Date(qfStartDate.getTime());
+      matchDate.setDate(qfStartDate.getDate() + Math.floor(i / 2));
+      matchDate.setHours(17 + (i % 2) * 3);
+      const stadiumInfo = STADIAS[(i + 8) % STADIAS.length];
+      updated.push({
+        id: matchId++,
+        homeTeam: `Sieger VF ${i * 2 + 1}`,
+        awayTeam: `Sieger VF ${i * 2 + 2}`,
+        homeScore: null,
+        awayScore: null,
+        date: matchDate.toISOString(),
+        stage: 'QUARTER_FINALS',
+        stadium: stadiumInfo.stadium,
+        city: stadiumInfo.city,
+        finished: false
+      });
+    }
+
+    // Halbfinale (Spiele 101-102)
+    const sfStartDate = new Date('2026-07-14T18:00:00Z');
+    for (let i = 0; i < 2; i++) {
+      const matchDate = new Date(sfStartDate.getTime());
+      matchDate.setDate(sfStartDate.getDate() + i);
+      matchDate.setHours(20);
+      const stadiumInfo = STADIAS[i % STADIAS.length];
+      updated.push({
+        id: matchId++,
+        homeTeam: `Sieger HF ${i + 1}`,
+        awayTeam: `Sieger HF ${i + 2}`,
+        homeScore: null,
+        awayScore: null,
+        date: matchDate.toISOString(),
+        stage: 'SEMI_FINALS',
+        stadium: stadiumInfo.stadium,
+        city: stadiumInfo.city,
+        finished: false
+      });
+    }
+
+    // Spiel um Platz 3 (Spiel 103)
+    const thirdPlaceDate = new Date('2026-07-18T20:00:00Z');
+    updated.push({
+      id: matchId++,
+      homeTeam: 'Verlierer Halbfinale 1',
+      awayTeam: 'Verlierer Halbfinale 2',
+      homeScore: null,
+      awayScore: null,
+      date: thirdPlaceDate.toISOString(),
+      stage: 'THIRD_PLACE',
+      stadium: 'Hard Rock Stadium',
+      city: 'Miami',
+      finished: false
+    });
+
+    // Finale (Spiel 104)
+    const finalDate = new Date('2026-07-19T20:00:00Z');
+    updated.push({
+      id: matchId++,
+      homeTeam: 'Sieger Halbfinale 1',
+      awayTeam: 'Sieger Halbfinale 2',
+      homeScore: null,
+      awayScore: null,
+      date: finalDate.toISOString(),
+      stage: 'FINAL',
+      stadium: 'MetLife Stadium',
+      city: 'New York/New Jersey',
+      finished: false
+    });
+  }
+
   const standings = calculateStandings(updated, teams);
 
   // 1. Runde der 32 (Spiele 73-88, Indizes 72-87)
@@ -285,29 +421,70 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
     const dynamicTeams = Object.values(teamsMap);
 
     const matches = apiMatches.map((m: any, index: number) => {
-      const homeTeam = m.team1.shortName || m.team1.teamName;
-      const awayTeam = m.team2.shortName || m.team2.teamName;
+      // Sicheres Parsen der Team-IDs/Namen
+      const homeTeam = m.team1 ? (m.team1.shortName || m.team1.teamName) : `TBD (Heim)`;
+      const awayTeam = m.team2 ? (m.team2.shortName || m.team2.teamName) : `TBD (Gast)`;
 
-      // Ermittle die Stage
-      const groupName = m.group.groupName || '';
+      // Ermittle die Stage (präzise Zuordnung für verschiedene Sprachen und Kurzformen)
+      const groupName = m.group?.groupName || '';
       let stage: Stage = 'GROUP';
-      if (groupName.includes('Runde der 32') || groupName.includes('Sechzehntelfinale')) stage = 'ROUND_OF_32';
-      else if (groupName.includes('Achtelfinale')) stage = 'ROUND_OF_16';
-      else if (groupName.includes('Viertelfinale')) stage = 'QUARTER_FINALS';
-      else if (groupName.includes('Halbfinale')) stage = 'SEMI_FINALS';
-      else if (groupName.includes('Platz 3') || groupName.includes('Dritter')) stage = 'THIRD_PLACE';
-      else if (groupName.includes('Finale')) stage = 'FINAL';
+      const normalizedGroup = groupName.toLowerCase();
+      if (
+        normalizedGroup.includes('runde der 32') || 
+        normalizedGroup.includes('sechzehntelfinale') || 
+        normalizedGroup.includes('1/16') ||
+        normalizedGroup.includes('round of 32')
+      ) {
+        stage = 'ROUND_OF_32';
+      } else if (
+        normalizedGroup.includes('achtelfinale') || 
+        normalizedGroup.includes('1/8') ||
+        normalizedGroup.includes('round of 16')
+      ) {
+        stage = 'ROUND_OF_16';
+      } else if (
+        normalizedGroup.includes('viertelfinale') || 
+        normalizedGroup.includes('1/4') ||
+        normalizedGroup.includes('quarter')
+      ) {
+        stage = 'QUARTER_FINALS';
+      } else if (
+        normalizedGroup.includes('halbfinale') || 
+        normalizedGroup.includes('1/2') ||
+        normalizedGroup.includes('semi')
+      ) {
+        stage = 'SEMI_FINALS';
+      } else if (
+        normalizedGroup.includes('platz 3') || 
+        normalizedGroup.includes('dritter') || 
+        normalizedGroup.includes('third')
+      ) {
+        stage = 'THIRD_PLACE';
+      } else if (
+        normalizedGroup.includes('finale') || 
+        normalizedGroup.includes('endspiel') ||
+        normalizedGroup.includes('final')
+      ) {
+        stage = 'FINAL';
+      }
 
-      // Ermittle die Gruppe
-      const group = stage === 'GROUP' ? (OFFICIAL_GROUPS[homeTeam] || 'A') : undefined;
+      // Ermittle die Gruppe basierend auf OFFICIAL_GROUPS
+      let group = stage === 'GROUP' ? (OFFICIAL_GROUPS[homeTeam] || OFFICIAL_GROUPS[awayTeam]) : undefined;
 
-      // Extrahiere Tore
+      // Wenn die Klassifizierung GROUP ergab, aber keines der Teams in OFFICIAL_GROUPS liegt,
+      // handelt es sich wahrscheinlich um ein K.o.-Spiel mit Platzhaltern (z. B. "Sieger Spiel X").
+      // Das ordnen wir der K.o.-Phase zu, um das Leak in die Gruppenphase zu verhindern.
+      if (stage === 'GROUP' && !group) {
+        stage = 'ROUND_OF_32';
+      }
+
+      // Extrahiere Tore (auch für laufende Spiele ohne matchIsFinished-Flag)
       let homeScore: number | null = null;
       let awayScore: number | null = null;
       let homePenaltyScore: number | undefined;
       let awayPenaltyScore: number | undefined;
 
-      if (m.matchIsFinished && m.matchResults && m.matchResults.length > 0) {
+      if (m.matchResults && m.matchResults.length > 0) {
         const finalResult = m.matchResults.find((r: any) => 
           r.resultName === 'Endergebnis' || 
           r.resultName === 'Ergebnis nach Verlängerung' || 
