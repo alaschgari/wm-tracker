@@ -1,10 +1,12 @@
 import React from 'react';
 import { GroupStanding, Team } from '../types';
 import styles from './GroupStandings.module.css';
+import { TEAM_TRANSLATIONS, Language } from '../data/translations';
 
 interface GroupStandingsProps {
   standings: Record<string, GroupStanding[]>;
   teams: Team[];
+  lang?: string;
   teamLabel?: string;
   playedLabel?: string;
   diffLabel?: string;
@@ -15,6 +17,7 @@ interface GroupStandingsProps {
 export const GroupStandings: React.FC<GroupStandingsProps> = ({
   standings,
   teams,
+  lang = 'de',
   teamLabel = 'Team',
   playedLabel = 'Sp',
   diffLabel = 'TD',
@@ -22,7 +25,12 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({
   groupLabel = 'Gruppe'
 }) => {
   const getTeamInfo = (teamId: string) => {
-    return teams.find((t) => t.id === teamId) || { id: teamId, name: teamId, flag: '🏳️' };
+    const team = teams.find((t) => t.id === teamId);
+    if (team) {
+      const name = TEAM_TRANSLATIONS[team.id]?.[lang as Language] || team.name;
+      return { id: team.id, name, flag: team.flag };
+    }
+    return { id: teamId, name: teamId, flag: '🏳️' };
   };
 
   const getQualifyClass = (index: number) => {

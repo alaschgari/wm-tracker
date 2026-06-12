@@ -222,9 +222,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           {/* Rechte Spalte: Tabellen */}
           <div>
             <h2 className={styles.sectionTitle}>{t.liveStandings}</h2>
-            <GroupStandings
+             <GroupStandings
               standings={standings}
               teams={currentTeams}
+              lang={language}
               teamLabel={language === 'en' ? 'Team' : language === 'es' ? 'Equipo' : language === 'fr' ? 'Équipe' : language === 'ru' ? 'Команда' : language === 'uk' ? 'Команда' : 'Team'}
               playedLabel={language === 'en' ? 'GP' : language === 'fr' ? 'MJ' : language === 'es' ? 'PJ' : language === 'ru' ? 'И' : language === 'uk' ? 'І' : 'Sp'}
               diffLabel={language === 'en' ? 'GD' : language === 'fr' ? 'DB' : language === 'es' ? 'DG' : language === 'ru' ? 'РМ' : language === 'uk' ? 'РМ' : 'TD'}

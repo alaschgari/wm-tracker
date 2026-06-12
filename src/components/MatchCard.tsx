@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Match, Team } from '../types';
+import { TEAM_TRANSLATIONS, Language } from '../data/translations';
 import styles from './MatchCard.module.css';
 
 interface MatchCardProps {
@@ -18,9 +19,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   const getTeamInfo = (teamId: string): { name: string; flag: string } => {
     const team = teams.find((t) => t.id === teamId);
     if (team) {
-      return { name: team.name, flag: team.flag };
+      const translatedName = TEAM_TRANSLATIONS[team.id]?.[lang as Language] || team.name;
+      return { name: translatedName, flag: team.flag };
     }
-    return { name: teamId, flag: '🏳️' };
+    
+    // Fallback/Translate placeholder text like "Sieger Spiel X" or "Verlierer HF 1"
+    let displayPlaceholder = teamId;
+    if (lang !== 'de') {
+      displayPlaceholder = teamId
+        .replace('Sieger Spiel', lang === 'en' ? 'Winner Match' : lang === 'es' ? 'Ganador Partido' : lang === 'fr' ? 'Vainqueur Match' : lang === 'ru' ? 'Победитель Матча' : 'Переможець Матчу')
+        .replace('Sieger AF', lang === 'en' ? 'Winner R16' : lang === 'es' ? 'Ganador Octavos' : lang === 'fr' ? 'Vainqueur Huitièmes' : lang === 'ru' ? 'Победитель 1/8' : 'Переможець 1/8')
+        .replace('Sieger VF', lang === 'en' ? 'Winner QF' : lang === 'es' ? 'Ganador Cuartos' : lang === 'fr' ? 'Vainqueur Quarts' : lang === 'ru' ? 'Победитель 1/4' : 'Переможець 1/4')
+        .replace('Sieger HF', lang === 'en' ? 'Winner SF' : lang === 'es' ? 'Ganador Semis' : lang === 'fr' ? 'Vainqueur Demis' : lang === 'ru' ? 'Победитель 1/2' : 'Переможець 1/2')
+        .replace('Verlierer Halbfinale', lang === 'en' ? 'Loser Semi-final' : lang === 'es' ? 'Perdedor Semifinal' : lang === 'fr' ? 'Perdant Demi-finale' : lang === 'ru' ? 'Проигравший 1/2' : 'Той, хто програв 1/2')
+        .replace('Sieger Halbfinale', lang === 'en' ? 'Winner Semi-final' : lang === 'es' ? 'Ganador Semifinal' : lang === 'fr' ? 'Vainqueur Demi-finale' : lang === 'ru' ? 'Победитель 1/2' : 'Переможець 1/2')
+        .replace('Zweiter Spiel', lang === 'en' ? 'Runner-up Match' : lang === 'es' ? 'Segundo Partido' : lang === 'fr' ? 'Deuxième Match' : lang === 'ru' ? 'Второе Место Матча' : 'Друге Місце Матчу')
+        .replace('(Platzhalter)', lang === 'en' ? '(Placeholder)' : lang === 'es' ? '(Marcador)' : lang === 'fr' ? '(Position)' : lang === 'ru' ? '(Заглушка)' : '(Заглушка)');
+    }
+    
+    return { name: displayPlaceholder, flag: '🏳️' };
   };
 
   const homeTeamInfo = getTeamInfo(match.homeTeam);
