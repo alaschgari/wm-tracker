@@ -28,6 +28,7 @@ export interface TranslationDictionary {
   allRounds: string;
   loading: string;
   penalty: string;
+  timeMatrix: string;
 }
 
 export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
@@ -58,7 +59,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     finalize: 'Abschließen',
     allRounds: 'Alle Runden',
     loading: 'Lade...',
-    penalty: 'Elfmeter'
+    penalty: 'Elfmeter',
+    timeMatrix: 'Zeit-Matrix'
   },
   en: {
     title: 'FIFA World Cup 2026',
@@ -87,7 +89,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     finalize: 'Finalize',
     allRounds: 'All Rounds',
     loading: 'Loading...',
-    penalty: 'Penalties'
+    penalty: 'Penalties',
+    timeMatrix: 'Time Matrix'
   },
   es: {
     title: 'Copa Mundial de la FIFA 2026',
@@ -116,7 +119,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     finalize: 'Finalizar',
     allRounds: 'Todas las rondas',
     loading: 'Cargando...',
-    penalty: 'Penaltis'
+    penalty: 'Penaltis',
+    timeMatrix: 'Matriz de tiempo'
   },
   fr: {
     title: 'Coupe du Monde de la FIFA 2026',
@@ -145,7 +149,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     finalize: 'Finaliser',
     allRounds: 'Tous les tours',
     loading: 'Chargement...',
-    penalty: 'Tirs au but'
+    penalty: 'Tirs au but',
+    timeMatrix: 'Matrice de temps'
   },
   ru: {
     title: 'Чемпионат мира по футболу 2026',
@@ -174,7 +179,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     finalize: 'Завершить',
     allRounds: 'Все раунды',
     loading: 'Загрузка...',
-    penalty: 'Пенальти'
+    penalty: 'Пенальти',
+    timeMatrix: 'Матрица времени'
   },
   uk: {
     title: 'Чемпіонат світу з футболу 2026',
@@ -203,7 +209,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     finalize: 'Завершити',
     allRounds: 'Всі раунди',
     loading: 'Завантаження...',
-    penalty: 'Пенальті'
+    penalty: 'Пенальті',
+    timeMatrix: 'Матриця часу'
   }
 };
 

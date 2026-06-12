@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
+import { TimeMatrix } from './TimeMatrix';
 import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi } from '../services/dataService';
 import { TRANSLATIONS, Language } from '../data/translations';
 import styles from '../app/page.module.css';
@@ -15,7 +16,7 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) => {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [activeTab, setActiveTab] = useState<'GROUP' | 'KNOCKOUT'>('GROUP');
+  const [activeTab, setActiveTab] = useState<'GROUP' | 'KNOCKOUT' | 'MATRIX'>('GROUP');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [selectedKnockoutStage, setSelectedKnockoutStage] = useState<Stage | 'ALL'>('ALL');
   const [mounted, setMounted] = useState(false);
@@ -177,6 +178,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           >
             {t.knockoutStage}
           </button>
+          <button
+            onClick={() => setActiveTab('MATRIX')}
+            className={`${styles.tabButton} ${activeTab === 'MATRIX' ? styles.tabButtonActive : ''}`}
+          >
+            {t.timeMatrix}
+          </button>
         </div>
 
         <div className={styles.buttonGroup}>
@@ -186,7 +193,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         </div>
       </div>
 
-      {activeTab === 'GROUP' ? (
+      {activeTab === 'GROUP' && (
         <div className={`${styles.layout} ${styles.layoutTwoCol}`}>
           {/* Linke Spalte: Spiele */}
           <div>
@@ -234,7 +241,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
             />
           </div>
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'KNOCKOUT' && (
         <div className={styles.layout}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
@@ -268,6 +277,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
             </div>
           </div>
         </div>
+      )}
+
+      {activeTab === 'MATRIX' && (
+        <TimeMatrix matches={matches} teams={currentTeams} lang={language} />
       )}
     </div>
   );
