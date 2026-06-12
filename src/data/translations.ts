@@ -30,6 +30,7 @@ export interface TranslationDictionary {
   penalty: string;
   timeMatrix: string;
   selectTimezone: string;
+  favoriteTooltip: string;
 }
 
 export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
@@ -62,7 +63,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Lade...',
     penalty: 'Elfmeter',
     timeMatrix: 'Zeit-Matrix',
-    selectTimezone: 'Zeitzone wählen'
+    selectTimezone: 'Zeitzone wählen',
+    favoriteTooltip: 'Lieblingsland markieren/entfernen'
   },
   en: {
     title: 'FIFA World Cup 2026',
@@ -93,7 +95,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Loading...',
     penalty: 'Penalties',
     timeMatrix: 'Time Matrix',
-    selectTimezone: 'Select Timezone'
+    selectTimezone: 'Select Timezone',
+    favoriteTooltip: 'Toggle favorite country'
   },
   es: {
     title: 'Copa Mundial de la FIFA 2026',
@@ -124,7 +127,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Cargando...',
     penalty: 'Penaltis',
     timeMatrix: 'Matriz de tiempo',
-    selectTimezone: 'Seleccionar zona horaria'
+    selectTimezone: 'Seleccionar zona horaria',
+    favoriteTooltip: 'Marcar/desmarcar país favorito'
   },
   fr: {
     title: 'Coupe du Monde de la FIFA 2026',
@@ -155,7 +159,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Chargement...',
     penalty: 'Tirs au but',
     timeMatrix: 'Matrice de temps',
-    selectTimezone: 'Sélectionner le fuseau horaire'
+    selectTimezone: 'Sélectionner le fuseau horaire',
+    favoriteTooltip: 'Ajouter/retirer des pays favoris'
   },
   ru: {
     title: 'Чемпионат мира по футболу 2026',
@@ -186,7 +191,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Загрузка...',
     penalty: 'Пенальти',
     timeMatrix: 'Матрица времени',
-    selectTimezone: 'Выберите часовой пояс'
+    selectTimezone: 'Выберите часовой пояс',
+    favoriteTooltip: 'Добавить/удалить любимую страну'
   },
   uk: {
     title: 'Чемпіонат світу з футболу 2026',
@@ -217,7 +223,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Завантаження...',
     penalty: 'Пенальті',
     timeMatrix: 'Матриця часу',
-    selectTimezone: 'Виберіть часовий пояс'
+    selectTimezone: 'Виберіть часовий пояс',
+    favoriteTooltip: 'Додати/видалити улюблену країну'
   }
 };
 

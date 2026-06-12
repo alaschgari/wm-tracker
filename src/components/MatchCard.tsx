@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Match, Team } from '../types';
-import { TEAM_TRANSLATIONS, Language } from '../data/translations';
+import { TRANSLATIONS, TEAM_TRANSLATIONS, Language } from '../data/translations';
 import { exportToIcs } from '../services/calendarHelper';
 import styles from './MatchCard.module.css';
 
@@ -11,13 +11,17 @@ interface MatchCardProps {
   teams: Team[];
   lang?: string;
   timezone?: string;
+  favorites?: string[];
+  toggleFavorite?: (teamId: string) => void;
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({
   match,
   teams,
   lang = 'de',
-  timezone = 'Europe/Berlin'
+  timezone = 'Europe/Berlin',
+  favorites = [],
+  toggleFavorite
 }) => {
   const getTeamInfo = (teamId: string): { name: string; flag: string } => {
     const team = teams.find((t) => t.id === teamId);
@@ -60,9 +64,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   };
 
   const hasPenalties = match.finished && match.homePenaltyScore !== undefined && match.homePenaltyScore !== null;
+  const isHomeFav = favorites.includes(match.homeTeam);
+  const isAwayFav = favorites.includes(match.awayTeam);
+  const isAnyFav = isHomeFav || isAwayFav;
+  const favTooltip = TRANSLATIONS[lang as Language]?.favoriteTooltip || 'Favorite';
+
+  const isPlaceholder = (teamId: string) => {
+    return !teamId || teamId.startsWith('W') || teamId.startsWith('RU') || teamId.includes(' ') || teamId.length > 3;
+  };
 
   return (
-    <div className={`glass-panel ${styles.card}`}>
+    <div className={`glass-panel ${styles.card} ${isAnyFav ? styles.cardFavorite : ''}`}>
       <div className={styles.header}>
         <span className={styles.stageBadge}>
           {match.stage === 'GROUP' && match.group
@@ -76,10 +88,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
       <div className={styles.teamsContainer}>
         {/* Heimteam */}
-        <div className={styles.teamRow}>
+        <div className={`${styles.teamRow} ${isHomeFav ? styles.rowFavorite : ''}`}>
           <div className={styles.teamInfo}>
+            {!isPlaceholder(match.homeTeam) && toggleFavorite && (
+              <button
+                type="button"
+                onClick={() => toggleFavorite(match.homeTeam)}
+                className={`${styles.starBtn} ${isHomeFav ? styles.starActive : ''}`}
+                title={favTooltip}
+              >
+                {isHomeFav ? '★' : '☆'}
+              </button>
+            )}
             <span className={styles.flag}>{homeTeamInfo.flag}</span>
-            <span>{homeTeamInfo.name}</span>
+            <span className={isHomeFav ? styles.favTeamName : ''}>{homeTeamInfo.name}</span>
           </div>
           <div className={styles.scoreDisplay}>
             {match.homeScore !== null ? match.homeScore : '-'}
@@ -87,10 +109,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </div>
 
         {/* Auswärtsteam */}
-        <div className={styles.teamRow}>
+        <div className={`${styles.teamRow} ${isAwayFav ? styles.rowFavorite : ''}`}>
           <div className={styles.teamInfo}>
+            {!isPlaceholder(match.awayTeam) && toggleFavorite && (
+              <button
+                type="button"
+                onClick={() => toggleFavorite(match.awayTeam)}
+                className={`${styles.starBtn} ${isAwayFav ? styles.starActive : ''}`}
+                title={favTooltip}
+              >
+                {isAwayFav ? '★' : '☆'}
+              </button>
+            )}
             <span className={styles.flag}>{awayTeamInfo.flag}</span>
-            <span>{awayTeamInfo.name}</span>
+            <span className={isAwayFav ? styles.favTeamName : ''}>{awayTeamInfo.name}</span>
           </div>
           <div className={styles.scoreDisplay}>
             {match.awayScore !== null ? match.awayScore : '-'}

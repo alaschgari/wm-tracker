@@ -24,6 +24,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [language, setLanguage] = useState<Language>('de');
   const [currentTeams, setCurrentTeams] = useState<Team[]>(teams);
   const [timezone, setTimezone] = useState<string>('Europe/Berlin');
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -34,7 +35,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     } catch (e) {
       console.log('Failed to detect system timezone', e);
     }
+
+    try {
+      const savedFavorites = localStorage.getItem('wm_2026_favorites');
+      if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites));
+      }
+    } catch (e) {
+      console.log('Failed to load favorites', e);
+    }
   }, []);
+
+  const toggleFavorite = (teamId: string) => {
+    if (!teamId || teamId.startsWith('W') || teamId.startsWith('RU') || teamId.includes(' ') || teamId.length > 3) return;
+    setFavorites((prev) => {
+      const next = prev.includes(teamId)
+        ? prev.filter((id) => id !== teamId)
+        : [...prev, teamId];
+      localStorage.setItem('wm_2026_favorites', JSON.stringify(next));
+      return next;
+    });
+  };
 
   const timezones = [
     { value: 'America/New_York', label: 'New York (EST/EDT)' },
@@ -265,6 +286,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     teams={currentTeams}
                     lang={language}
                     timezone={timezone}
+                    favorites={favorites}
+                    toggleFavorite={toggleFavorite}
                   />
                 ))
               )}
@@ -283,6 +306,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
               diffLabel={language === 'en' ? 'GD' : language === 'fr' ? 'DB' : language === 'es' ? 'DG' : language === 'ru' ? 'РМ' : language === 'uk' ? 'РМ' : 'TD'}
               pointsLabel={language === 'en' ? 'Pts' : language === 'fr' ? 'Pts' : language === 'es' ? 'Pts' : language === 'ru' ? 'О' : language === 'uk' ? 'О' : 'Pkt'}
               groupLabel={t.group}
+              favorites={favorites}
+              toggleFavorite={toggleFavorite}
             />
           </div>
         </div>
@@ -317,6 +342,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     teams={currentTeams}
                     lang={language}
                     timezone={timezone}
+                    favorites={favorites}
+                    toggleFavorite={toggleFavorite}
                   />
                 ))
               )}
@@ -326,7 +353,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       )}
 
       {activeTab === 'MATRIX' && (
-        <TimeMatrix matches={matches} teams={currentTeams} lang={language} timezone={timezone} />
+        <TimeMatrix matches={matches} teams={currentTeams} lang={language} timezone={timezone} favorites={favorites} />
       )}
     </div>
   );

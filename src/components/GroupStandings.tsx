@@ -12,6 +12,8 @@ interface GroupStandingsProps {
   diffLabel?: string;
   pointsLabel?: string;
   groupLabel?: string;
+  favorites?: string[];
+  toggleFavorite?: (teamId: string) => void;
 }
 
 export const GroupStandings: React.FC<GroupStandingsProps> = ({
@@ -22,7 +24,9 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({
   playedLabel = 'Sp',
   diffLabel = 'TD',
   pointsLabel = 'Pkt',
-  groupLabel = 'Gruppe'
+  groupLabel = 'Gruppe',
+  favorites = [],
+  toggleFavorite
 }) => {
   const getTeamInfo = (teamId: string) => {
     const team = teams.find((t) => t.id === teamId);
@@ -61,14 +65,25 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({
                 const team = getTeamInfo(row.teamId);
                 const qualifyClass = getQualifyClass(idx);
                 const isLeader = idx === 0;
+                const isFavorite = favorites.includes(row.teamId);
 
                 return (
-                  <tr key={row.teamId} className={`${styles.teamRow} ${qualifyClass}`}>
+                  <tr key={row.teamId} className={`${styles.teamRow} ${qualifyClass} ${isFavorite ? styles.rowFavorite : ''}`}>
                     <td>
                       <div className={styles.teamNameCell}>
                         <span className={styles.rank}>{idx + 1}</span>
+                        {toggleFavorite && (
+                          <button
+                            type="button"
+                            onClick={() => toggleFavorite(row.teamId)}
+                            className={`${styles.starBtn} ${isFavorite ? styles.starActive : ''}`}
+                            title={lang === 'en' ? 'Toggle favorite country' : lang === 'es' ? 'Marcar/desmarcar país favorito' : lang === 'fr' ? 'Ajouter/retirer favori' : lang === 'ru' ? 'Добавить/удалить любимую страну' : lang === 'uk' ? 'Додати/видалити улюблену країну' : 'Lieblingsland markieren/entfernen'}
+                          >
+                            {isFavorite ? '★' : '☆'}
+                          </button>
+                        )}
                         <span className={styles.flag}>{team.flag}</span>
-                        <span title={team.name}>{team.id}</span>
+                        <span title={team.name} className={isFavorite ? styles.favTeamName : ''}>{team.id}</span>
                       </div>
                     </td>
                     <td>{row.played}</td>

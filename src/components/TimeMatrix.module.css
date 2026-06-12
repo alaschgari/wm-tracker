@@ -147,3 +147,14 @@
 .miniCalendarBtn:hover {
   transform: scale(1.2);
 }
+
+.miniMatchCardFavorite {
+  border-color: rgba(212, 175, 55, 0.35) !important;
+  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.1) !important;
+  background: linear-gradient(135deg, rgba(13, 20, 35, 0.8) 0%, rgba(26, 22, 13, 0.8) 100%) !important;
+}
+
+.favTeamCode {
+  color: var(--accent-gold) !important;
+  font-weight: 700;
+}

@@ -11,13 +11,15 @@ interface TimeMatrixProps {
   teams: Team[];
   lang: string;
   timezone?: string;
+  favorites?: string[];
 }
 
 export const TimeMatrix: React.FC<TimeMatrixProps> = ({
   matches,
   teams,
   lang = 'de',
-  timezone = 'Europe/Berlin'
+  timezone = 'Europe/Berlin',
+  favorites = []
 }) => {
   const locale = lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : lang === 'ru' ? 'ru-RU' : lang === 'uk' ? 'uk-UA' : 'de-DE';
 
@@ -133,11 +135,14 @@ export const TimeMatrix: React.FC<TimeMatrixProps> = ({
                         const home = getTeamInfo(match.homeTeam);
                         const away = getTeamInfo(match.awayTeam);
                         const showScore = match.homeScore !== null && match.awayScore !== null;
+                        const isHomeFav = favorites.includes(match.homeTeam);
+                        const isAwayFav = favorites.includes(match.awayTeam);
+                        const isAnyFav = isHomeFav || isAwayFav;
                         
                         return (
                           <div 
                             key={match.id} 
-                            className={styles.miniMatchCard}
+                            className={`${styles.miniMatchCard} ${isAnyFav ? styles.miniMatchCardFavorite : ''}`}
                             title={`${match.stage.replace('_', ' ')} - ${match.stadium}, ${match.city}`}
                           >
                             <div className={styles.miniCardHeader}>
@@ -159,13 +164,13 @@ export const TimeMatrix: React.FC<TimeMatrixProps> = ({
                             </div>
                             <div className={styles.miniTeam}>
                               <span>{home.flag}</span>
-                              <span className={styles.teamCode}>{match.homeTeam}</span>
+                              <span className={`${styles.teamCode} ${isHomeFav ? styles.favTeamCode : ''}`}>{match.homeTeam}</span>
                               {showScore && <span className={styles.miniScore}>{match.homeScore}</span>}
                             </div>
                             <div className={styles.divider}>vs</div>
                             <div className={styles.miniTeam}>
                               <span>{away.flag}</span>
-                              <span className={styles.teamCode}>{match.awayTeam}</span>
+                              <span className={`${styles.teamCode} ${isAwayFav ? styles.favTeamCode : ''}`}>{match.awayTeam}</span>
                               {showScore && <span className={styles.miniScore}>{match.awayScore}</span>}
                             </div>
                           </div>
