@@ -5,9 +5,22 @@ import styles from './GroupStandings.module.css';
 interface GroupStandingsProps {
   standings: Record<string, GroupStanding[]>;
   teams: Team[];
+  teamLabel?: string;
+  playedLabel?: string;
+  diffLabel?: string;
+  pointsLabel?: string;
+  groupLabel?: string;
 }
 
-export const GroupStandings: React.FC<GroupStandingsProps> = ({ standings, teams }) => {
+export const GroupStandings: React.FC<GroupStandingsProps> = ({
+  standings,
+  teams,
+  teamLabel = 'Team',
+  playedLabel = 'Sp',
+  diffLabel = 'TD',
+  pointsLabel = 'Pkt',
+  groupLabel = 'Gruppe'
+}) => {
   const getTeamInfo = (teamId: string) => {
     return teams.find((t) => t.id === teamId) || { id: teamId, name: teamId, flag: '🏳️' };
   };
@@ -25,14 +38,14 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({ standings, teams
     <div className={styles.grid}>
       {sortedGroups.map((groupName) => (
         <div key={groupName} className={`glass-panel ${styles.groupCard}`}>
-          <div className={styles.groupTitle}>Gruppe {groupName}</div>
+          <div className={styles.groupTitle}>{groupLabel} {groupName}</div>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Team</th>
-                <th>Sp</th>
-                <th>TD</th>
-                <th>Pkt</th>
+                <th>{teamLabel}</th>
+                <th>{playedLabel}</th>
+                <th>{diffLabel}</th>
+                <th>{pointsLabel}</th>
               </tr>
             </thead>
             <tbody>

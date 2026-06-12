@@ -5,6 +5,7 @@ import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
 import { calculateStandings, updateKnockoutMatches, fetchLiveMatches } from '../services/dataService';
+import { TRANSLATIONS, Language } from '../data/translations';
 import styles from '../app/page.module.css';
 
 interface DashboardProps {
@@ -18,11 +19,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [selectedKnockoutStage, setSelectedKnockoutStage] = useState<Stage | 'ALL'>('ALL');
   const [mounted, setMounted] = useState(false);
-
   const [syncing, setSyncing] = useState(false);
+  const [language, setLanguage] = useState<Language>('de');
 
   // Initialisiere Matches aus API (Live-Daten), localStorage oder Props
   useEffect(() => {
+    const savedLang = localStorage.getItem('wm_2026_lang') as Language;
+    if (savedLang && ['de', 'en', 'es', 'fr', 'ru', 'uk'].includes(savedLang)) {
+      setLanguage(savedLang);
+    }
     const loadData = async () => {
       // 1. Versuche Live-Daten zu laden
       try {
@@ -55,8 +60,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     loadData();
   }, [initialMatches, teams]);
 
+  const t = TRANSLATIONS[language];
+
   if (!mounted) {
-    return <div className={styles.emptyState}>Lade WM Tracker...</div>;
+    return <div className={styles.emptyState}>{TRANSLATIONS[language]?.loading || 'Loading...'}</div>;
   }
 
   const syncLiveResults = async () => {
@@ -69,7 +76,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         localStorage.setItem('wm_2026_matches', JSON.stringify(propagated));
       }
     } catch (e) {
-      alert('Fehler beim Abrufen der Live-Daten.');
+      alert(t.liveSyncError);
     } finally {
       setSyncing(false);
     }
@@ -150,7 +157,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   };
 
   const resetAllMatches = () => {
-    if (confirm('Möchtest du wirklich alle Ergebnisse zurücksetzen?')) {
+    if (confirm(t.resetConfirm)) {
       setMatches(initialMatches);
       localStorage.removeItem('wm_2026_matches');
     }
@@ -172,22 +179,42 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
   const groupList = ['ALL', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
   const knockoutStages: { value: Stage | 'ALL'; label: string }[] = [
-    { value: 'ALL', label: 'Alle Runden' },
-    { value: 'ROUND_OF_32', label: 'Runde der 32' },
-    { value: 'ROUND_OF_16', label: 'Achtelfinale' },
-    { value: 'QUARTER_FINALS', label: 'Viertelfinale' },
-    { value: 'SEMI_FINALS', label: 'Halbfinale' },
-    { value: 'THIRD_PLACE', label: 'Spiel um Platz 3' },
-    { value: 'FINAL', label: 'Finale' },
+    { value: 'ALL', label: t.allRounds },
+    { value: 'ROUND_OF_32', label: t.round32 },
+    { value: 'ROUND_OF_16', label: t.round16 },
+    { value: 'QUARTER_FINALS', label: t.quarterFinals },
+    { value: 'SEMI_FINALS', label: t.semiFinals },
+    { value: 'THIRD_PLACE', label: t.thirdPlace },
+    { value: 'FINAL', label: t.final },
   ];
 
   return (
     <div className={styles.main}>
       <header className={styles.header}>
-        <h1 className={styles.title}>FIFA World Cup 2026</h1>
-        <p className={styles.subtitle}>
-          Ergebnis-Tracker & interaktiver Turniersimulator. Trage Tore ein oder simuliere das gesamte Turnier.
-        </p>
+        <h1 className={styles.title}>{t.title}</h1>
+        <p className={styles.subtitle}>{t.subtitle}</p>
+
+        {/* Language Selector */}
+        <div className={styles.languageSelector}>
+          {(['de', 'en', 'es', 'fr', 'ru', 'uk'] as Language[]).map((lang) => {
+            const flags: Record<Language, string> = {
+              de: '🇩🇪', en: '🇬🇧', es: '🇪🇸', fr: '🇫🇷', ru: '🇷🇺', uk: '🇺🇦'
+            };
+            return (
+              <button
+                key={lang}
+                onClick={() => {
+                  setLanguage(lang);
+                  localStorage.setItem('wm_2026_lang', lang);
+                }}
+                className={`${styles.langBtn} ${language === lang ? styles.langBtnActive : ''}`}
+              >
+                <span>{flags[lang]}</span>
+                <span>{lang.toUpperCase()}</span>
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       <div className={styles.controls}>
@@ -196,25 +223,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
             onClick={() => setActiveTab('GROUP')}
             className={`${styles.tabButton} ${activeTab === 'GROUP' ? styles.tabButtonActive : ''}`}
           >
-            Gruppenphase
+            {t.groupStage}
           </button>
           <button
             onClick={() => setActiveTab('KNOCKOUT')}
             className={`${styles.tabButton} ${activeTab === 'KNOCKOUT' ? styles.tabButtonActive : ''}`}
           >
-            K.o.-Phase
+            {t.knockoutStage}
           </button>
         </div>
 
         <div className={styles.buttonGroup}>
           <button onClick={syncLiveResults} disabled={syncing} className={styles.btn}>
-            {syncing ? '⌛ Synchronisiere...' : '🔄 Live-Sync'}
+            {syncing ? t.liveSyncing : t.liveSync}
           </button>
           <button onClick={simulateAllMatches} className={`${styles.btn} ${styles.btnPrimary}`}>
-            ⚡ Alle simulieren
+            {t.simulateAll}
           </button>
           <button onClick={resetAllMatches} className={`${styles.btn} ${styles.btnDanger}`}>
-            ↺ Zurücksetzen
+            {t.reset}
           </button>
         </div>
       </div>
@@ -223,7 +250,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         <div className={`${styles.layout} ${styles.layoutTwoCol}`}>
           {/* Linke Spalte: Spiele */}
           <div>
-            <h2 className={styles.sectionTitle}>⚽ Gruppenspiele</h2>
+            <h2 className={styles.sectionTitle}>{t.groupMatches}</h2>
             <div className={styles.filterBar}>
               {groupList.map((g) => (
                 <button
@@ -231,14 +258,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                   onClick={() => setSelectedGroup(g)}
                   className={`${styles.filterChip} ${selectedGroup === g ? styles.filterChipActive : ''}`}
                 >
-                  {g === 'ALL' ? 'Alle Gruppen' : `Gruppe ${g}`}
+                  {g === 'ALL' ? t.allGroups : `${t.group} ${g}`}
                 </button>
               ))}
             </div>
             
             <div className={styles.matchesList}>
               {filteredMatches.length === 0 ? (
-                <div className={styles.emptyState}>Keine Spiele gefunden.</div>
+                <div className={styles.emptyState}>-</div>
               ) : (
                 filteredMatches.map((match) => (
                   <MatchCard
@@ -246,6 +273,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     match={match}
                     teams={teams}
                     onScoreChange={handleScoreChange}
+                    saveText={t.finalize}
+                    savedText={t.saved}
+                    penaltyText={t.penalty}
+                    lang={language}
                   />
                 ))
               )}
@@ -254,15 +285,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
           {/* Rechte Spalte: Tabellen */}
           <div>
-            <h2 className={styles.sectionTitle}>🏆 Live-Tabellen</h2>
-            <GroupStandings standings={standings} teams={teams} />
+            <h2 className={styles.sectionTitle}>{t.liveStandings}</h2>
+            <GroupStandings
+              standings={standings}
+              teams={teams}
+              teamLabel={language === 'en' ? 'Team' : language === 'es' ? 'Equipo' : language === 'fr' ? 'Équipe' : language === 'ru' ? 'Команда' : language === 'uk' ? 'Команда' : 'Team'}
+              playedLabel={language === 'en' ? 'GP' : language === 'fr' ? 'MJ' : language === 'es' ? 'PJ' : language === 'ru' ? 'И' : language === 'uk' ? 'І' : 'Sp'}
+              diffLabel={language === 'en' ? 'GD' : language === 'fr' ? 'DB' : language === 'es' ? 'DG' : language === 'ru' ? 'РМ' : language === 'uk' ? 'РМ' : 'TD'}
+              pointsLabel={language === 'en' ? 'Pts' : language === 'fr' ? 'Pts' : language === 'es' ? 'Pts' : language === 'ru' ? 'О' : language === 'uk' ? 'О' : 'Pkt'}
+              groupLabel={t.group}
+            />
           </div>
         </div>
       ) : (
         <div className={styles.layout}>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>🛡️ K.o.-Runden Baum</h2>
+              <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>{t.matchTree}</h2>
               <select
                 value={selectedKnockoutStage}
                 onChange={(e) => setSelectedKnockoutStage(e.target.value as Stage | 'ALL')}
@@ -278,7 +317,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
             <div className={styles.matchesList} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', maxHeight: 'none' }}>
               {filteredMatches.length === 0 ? (
-                <div className={styles.emptyState}>Keine K.o.-Spiele vorhanden. Schließe die Gruppenphase ab, um Teams zu qualifizieren.</div>
+                <div className={styles.emptyState}>-</div>
               ) : (
                 filteredMatches.map((match) => (
                   <MatchCard
@@ -286,6 +325,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     match={match}
                     teams={teams}
                     onScoreChange={handleScoreChange}
+                    saveText={t.finalize}
+                    savedText={t.saved}
+                    penaltyText={t.penalty}
+                    lang={language}
                   />
                 ))
               )}

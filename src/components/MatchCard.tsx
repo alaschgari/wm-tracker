@@ -15,9 +15,21 @@ interface MatchCardProps {
     awayPenaltyScore?: number | null,
     finished?: boolean
   ) => void;
+  saveText?: string;
+  savedText?: string;
+  penaltyText?: string;
+  lang?: string;
 }
 
-export const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onScoreChange }) => {
+export const MatchCard: React.FC<MatchCardProps> = ({
+  match,
+  teams,
+  onScoreChange,
+  saveText = 'Abschließen',
+  savedText = 'Gespeichert ✓',
+  penaltyText = 'Elfmeter',
+  lang = 'de'
+}) => {
   const getTeamInfo = (teamId: string): { name: string; flag: string } => {
     const team = teams.find((t) => t.id === teamId);
     if (team) {
@@ -110,12 +122,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onScoreChang
 
   const formatDate = (isoString: string) => {
     const d = new Date(isoString);
-    return d.toLocaleDateString('de-DE', {
+    const locale = lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : lang === 'ru' ? 'ru-RU' : lang === 'uk' ? 'uk-UA' : 'de-DE';
+    const timeSuffix = lang === 'en' ? '' : lang === 'fr' ? ' h' : lang === 'es' ? ' h' : ' Uhr';
+    return d.toLocaleDateString(locale, {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-    }) + ' Uhr';
+    }) + timeSuffix;
   };
 
   return (
@@ -160,10 +174,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onScoreChang
           />
         </div>
 
-        {/* Elfmeterschießen (nur K.o.-Runde & Unentschieden) */}
         {showPenaltyInput && (
           <div className={styles.penaltyContainer}>
-            <span>Elfmeter:</span>
+            <span>{penaltyText}:</span>
             <input
               type="number"
               min="0"
@@ -191,7 +204,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onScoreChang
           onClick={toggleFinished}
           className={`${styles.actionButton} ${match.finished ? styles.actionButtonActive : ''}`}
         >
-          {match.finished ? 'Gespeichert ✓' : 'Abschließen'}
+          {match.finished ? savedText : saveText}
         </button>
       </div>
     </div>
