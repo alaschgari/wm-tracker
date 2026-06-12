@@ -21,8 +21,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [mounted, setMounted] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [language, setLanguage] = useState<Language>('de');
+  const [currentTeams, setCurrentTeams] = useState<Team[]>(teams);
 
-  // Initialisiere Matches aus API (Live-Daten), localStorage oder Props
+  // Initialisiere Matches und Teams aus API (Live-Daten), localStorage oder Props
   useEffect(() => {
     const savedLang = localStorage.getItem('wm_2026_lang') as Language;
     if (savedLang && ['de', 'en', 'es', 'fr', 'ru', 'uk'].includes(savedLang)) {
@@ -32,10 +33,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       // 1. Versuche Live-Daten zu laden
       try {
         const live = await fetchLiveMatches();
-        if (live && live.length > 0) {
-          const propagated = updateKnockoutMatches(live, teams);
+        if (live && live.matches.length > 0) {
+          const propagated = updateKnockoutMatches(live.matches, live.teams);
           setMatches(propagated);
+          setCurrentTeams(live.teams);
           localStorage.setItem('wm_2026_matches', JSON.stringify(propagated));
+          localStorage.setItem('wm_2026_teams', JSON.stringify(live.teams));
           setMounted(true);
           return;
         }
@@ -45,6 +48,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
       // 2. Fallback auf localStorage oder Props
       const saved = localStorage.getItem('wm_2026_matches');
+      const savedTeams = localStorage.getItem('wm_2026_teams');
+      
+      if (savedTeams) {
+        try {
+          setCurrentTeams(JSON.parse(savedTeams));
+        } catch (e) {
+          setCurrentTeams(teams);
+        }
+      } else {
+        setCurrentTeams(teams);
+      }
+
       if (saved) {
         try {
           setMatches(JSON.parse(saved));
@@ -70,10 +85,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     setSyncing(true);
     try {
       const live = await fetchLiveMatches();
-      if (live && live.length > 0) {
-        const propagated = updateKnockoutMatches(live, teams);
+      if (live && live.matches.length > 0) {
+        const propagated = updateKnockoutMatches(live.matches, live.teams);
         setMatches(propagated);
+        setCurrentTeams(live.teams);
         localStorage.setItem('wm_2026_matches', JSON.stringify(propagated));
+        localStorage.setItem('wm_2026_teams', JSON.stringify(live.teams));
       }
     } catch (e) {
       alert(t.liveSyncError);
@@ -105,7 +122,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     });
 
     // Berechne K.o.-Runden automatisch weiter
-    updatedMatches = updateKnockoutMatches(updatedMatches, teams);
+    updatedMatches = updateKnockoutMatches(updatedMatches, currentTeams);
 
     setMatches(updatedMatches);
     localStorage.setItem('wm_2026_matches', JSON.stringify(updatedMatches));
@@ -150,7 +167,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     });
 
     // Propagation der Gewinner in K.o.-Spiele
-    simulated = updateKnockoutMatches(simulated, teams);
+    simulated = updateKnockoutMatches(simulated, currentTeams);
 
     setMatches(simulated);
     localStorage.setItem('wm_2026_matches', JSON.stringify(simulated));
@@ -164,7 +181,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   };
 
   // Berechne aktuelle Tabellen
-  const standings = calculateStandings(matches, teams);
+  const standings = calculateStandings(matches, currentTeams);
 
   // Filtere Matches nach Gruppenphase vs K.o.-Phase
   const filteredMatches = matches.filter((m) => {
@@ -271,7 +288,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                   <MatchCard
                     key={match.id}
                     match={match}
-                    teams={teams}
+                    teams={currentTeams}
                     onScoreChange={handleScoreChange}
                     saveText={t.finalize}
                     savedText={t.saved}
@@ -288,7 +305,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
             <h2 className={styles.sectionTitle}>{t.liveStandings}</h2>
             <GroupStandings
               standings={standings}
-              teams={teams}
+              teams={currentTeams}
               teamLabel={language === 'en' ? 'Team' : language === 'es' ? 'Equipo' : language === 'fr' ? 'Équipe' : language === 'ru' ? 'Команда' : language === 'uk' ? 'Команда' : 'Team'}
               playedLabel={language === 'en' ? 'GP' : language === 'fr' ? 'MJ' : language === 'es' ? 'PJ' : language === 'ru' ? 'И' : language === 'uk' ? 'І' : 'Sp'}
               diffLabel={language === 'en' ? 'GD' : language === 'fr' ? 'DB' : language === 'es' ? 'DG' : language === 'ru' ? 'РМ' : language === 'uk' ? 'РМ' : 'TD'}
@@ -323,7 +340,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                   <MatchCard
                     key={match.id}
                     match={match}
-                    teams={teams}
+                    teams={currentTeams}
                     onScoreChange={handleScoreChange}
                     saveText={t.finalize}
                     savedText={t.saved}

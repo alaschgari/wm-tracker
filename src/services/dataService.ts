@@ -224,7 +224,21 @@ export const updateKnockoutMatches = (matches: Match[], teams: Team[]): Match[] 
   return updated;
 };
 
-export const fetchLiveMatches = async (): Promise<Match[]> => {
+const EMOJI_MAP: Record<string, string> = {
+  MEX: '🇲🇽', KOR: '🇰🇷', EGY: '🇪🇬', DZA: '🇩🇿', ARG: '🇦🇷', AUS: '🇦🇺',
+  BEL: '🇧🇪', BIH: '🇧🇦', BRA: '🇧🇷', CUW: '🇨🇼', DEU: '🇩🇪', GER: '🇩🇪',
+  COD: '🇨🇩', ECU: '🇪🇨', CIV: '🇨🇮', ENG: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', FRA: '🇫🇷', GHA: '🇬🇭',
+  HTI: '🇭🇹', IRQ: '🇮🇶', IRN: '🇮🇷', JPN: '🇯🇵', JOR: '🇯🇴', CAN: '🇨🇦',
+  CPV: '🇨🇻', QAT: '🇶🇦', COL: '🇨🇴', HRV: '🇭🇷', MAR: '🇲🇦', NZL: '🇳🇿',
+  NLD: '🇳🇱', NOR: '🇳🇴', AUT: '🇦🇹', PAN: '🇵🇦', PAR: '🇵🇾', PRT: '🇵🇹',
+  SAU: '🇸🇦', KSA: '🇸🇦', SCT: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', SWE: '🇸🇪', CHE: '🇨🇭', SUI: '🇨🇭',
+  SEN: '🇸🇳', ESP: '🇪🇸', TUN: '🇹🇳', TUR: '🇹🇷', URY: '🇺🇾', USA: '🇺🇸',
+  UZB: '🇺🇿', CZE: '🇨🇿', RSA: '🇿🇦', ROU: '🇷🇴', SVK: '🇸🇰', UKR: '🇺🇦',
+  GEO: '🇬🇪', SVN: '🇸🇮', SRB: '🇷🇸', ALB: '🇦🇱', HUN: '🇭🇺', CMR: '🇨🇲',
+  ITA: '🇮🇹', NGA: '🇳🇬', POL: '🇵🇱', JAM: '🇯🇲'
+};
+
+export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Team[] }> => {
   try {
     const res = await fetch('https://api.openligadb.de/getmatchdata/wm26/2026', {
       next: { revalidate: 60 } // Next.js native Cache Revalidation (60 Sekunden)
@@ -232,9 +246,79 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
     if (!res.ok) throw new Error('Fehler beim Laden der API');
     
     const apiMatches = await res.json();
-    if (!Array.isArray(apiMatches)) return [];
+    if (!Array.isArray(apiMatches)) return { matches: [], teams: [] };
 
-    return apiMatches.map((m: any, index: number) => {
+    // Cliquen-Algorithmus zur Gruppenbildung
+    const adj: Record<string, Set<string>> = {};
+    apiMatches.forEach((m: any) => {
+      const gName = m.group?.groupName || '';
+      if (gName.startsWith('Gruppenphase')) {
+        const t1 = m.team1.shortName || m.team1.teamName;
+        const t2 = m.team2.shortName || m.team2.teamName;
+        if (t1 && t2) {
+          if (!adj[t1]) adj[t1] = new Set();
+          if (!adj[t2]) adj[t2] = new Set();
+          adj[t1].add(t2);
+          adj[t2].add(t1);
+        }
+      }
+    });
+
+    const visited = new Set<string>();
+    const cliques: string[][] = [];
+    Object.keys(adj).forEach((team) => {
+      if (!visited.has(team)) {
+        const clique: string[] = [];
+        const queue = [team];
+        visited.add(team);
+        while (queue.length > 0) {
+          const curr = queue.shift()!;
+          clique.push(curr);
+          adj[curr]?.forEach((neighbor) => {
+            if (!visited.has(neighbor)) {
+              visited.add(neighbor);
+              queue.push(neighbor);
+            }
+          });
+        }
+        cliques.push(clique);
+      }
+    });
+
+    // Sortiere Cliquen nach dem ersten Element, um stabile Gruppen-Zuweisung zu sichern
+    cliques.sort((a, b) => a[0].localeCompare(b[0]));
+
+    const groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    const teamToGroup: Record<string, string> = {};
+    cliques.forEach((clique, idx) => {
+      const groupName = groupNames[idx] || `G${idx + 1}`;
+      clique.forEach((team) => {
+        teamToGroup[team] = groupName;
+      });
+    });
+
+    // Erstelle Team-Liste
+    const teamsMap: Record<string, Team> = {};
+    apiMatches.forEach((m: any) => {
+      const processTeam = (t: any) => {
+        if (!t) return;
+        const id = t.shortName || t.teamName;
+        if (!teamsMap[id]) {
+          teamsMap[id] = {
+            id,
+            name: t.teamName,
+            flag: EMOJI_MAP[id] || '🏳️',
+            group: teamToGroup[id] || 'A'
+          };
+        }
+      };
+      processTeam(m.team1);
+      processTeam(m.team2);
+    });
+
+    const dynamicTeams = Object.values(teamsMap);
+
+    const matches = apiMatches.map((m: any, index: number) => {
       const homeTeam = m.team1.shortName || m.team1.teamName;
       const awayTeam = m.team2.shortName || m.team2.teamName;
 
@@ -248,12 +332,8 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
       else if (groupName.includes('Platz 3') || groupName.includes('Dritter')) stage = 'THIRD_PLACE';
       else if (groupName.includes('Finale')) stage = 'FINAL';
 
-      // Ermittle die Gruppe für Gruppenspiele
-      let group: string | undefined;
-      if (stage === 'GROUP') {
-        const teamObj = TEAMS.find(t => t.id === homeTeam || t.name === m.team1.teamName);
-        group = teamObj ? teamObj.group : 'A';
-      }
+      // Ermittle die Gruppe
+      const group = stage === 'GROUP' ? (teamToGroup[homeTeam] || 'A') : undefined;
 
       // Extrahiere Tore
       let homeScore: number | null = null;
@@ -262,7 +342,6 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
       let awayPenaltyScore: number | undefined;
 
       if (m.matchIsFinished && m.matchResults && m.matchResults.length > 0) {
-        // Finde das Endergebnis (regulär oder nach Verlängerung/Elfmeter)
         const finalResult = m.matchResults.find((r: any) => 
           r.resultName === 'Endergebnis' || 
           r.resultName === 'Ergebnis nach Verlängerung' || 
@@ -274,7 +353,6 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
           awayScore = finalResult.pointsTeam2;
         }
 
-        // Falls Elfmeterschießen vorliegt
         const penaltyResult = m.matchResults.find((r: any) => r.resultName === 'Ergebnis nach Elfmeterschießen');
         if (penaltyResult) {
           homePenaltyScore = penaltyResult.pointsTeam1;
@@ -298,6 +376,8 @@ export const fetchLiveMatches = async (): Promise<Match[]> => {
         finished: m.matchIsFinished
       };
     });
+
+    return { matches, teams: dynamicTeams };
   } catch (error) {
     console.error('Failed to fetch live matches:', error);
     throw error;
