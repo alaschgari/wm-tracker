@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
-import { calculateStandings, updateKnockoutMatches, fetchLiveMatches } from '../services/dataService';
+import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi } from '../services/dataService';
 import { TRANSLATIONS, Language } from '../data/translations';
 import styles from '../app/page.module.css';
 
@@ -32,7 +32,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     const loadData = async () => {
       // 1. Versuche Live-Daten zu laden
       try {
-        const live = await fetchLiveMatches();
+        const live = await fetchLiveMatchesFromApi();
         if (live && live.matches.length > 0) {
           const propagated = updateKnockoutMatches(live.matches, live.teams);
           setMatches(propagated);
@@ -84,7 +84,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const syncLiveResults = async () => {
     setSyncing(true);
     try {
-      const live = await fetchLiveMatches();
+      const live = await fetchLiveMatchesFromApi();
       if (live && live.matches.length > 0) {
         const propagated = updateKnockoutMatches(live.matches, live.teams);
         setMatches(propagated);

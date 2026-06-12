@@ -350,4 +350,10 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
   }
 };
 
+export const fetchLiveMatchesFromApi = async (): Promise<{ matches: Match[]; teams: Team[] }> => {
+  const res = await fetch('/api/matches');
+  if (!res.ok) throw new Error('Fehler beim Laden des Proxies');
+  return res.json();
+};
+
 
