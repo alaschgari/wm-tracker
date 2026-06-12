@@ -3,18 +3,21 @@
 import React from 'react';
 import { Match, Team } from '../types';
 import { TEAM_TRANSLATIONS, Language } from '../data/translations';
+import { exportToIcs } from '../services/calendarHelper';
 import styles from './TimeMatrix.module.css';
 
 interface TimeMatrixProps {
   matches: Match[];
   teams: Team[];
   lang: string;
+  timezone?: string;
 }
 
 export const TimeMatrix: React.FC<TimeMatrixProps> = ({
   matches,
   teams,
-  lang = 'de'
+  lang = 'de',
+  timezone = 'Europe/Berlin'
 }) => {
   const locale = lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : lang === 'ru' ? 'ru-RU' : lang === 'uk' ? 'uk-UA' : 'de-DE';
 
@@ -49,6 +52,7 @@ export const TimeMatrix: React.FC<TimeMatrixProps> = ({
       weekday: 'short',
       day: '2-digit',
       month: '2-digit',
+      timeZone: timezone
     });
   };
 
@@ -58,6 +62,7 @@ export const TimeMatrix: React.FC<TimeMatrixProps> = ({
     return d.toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: timezone
     });
   };
 
@@ -72,7 +77,9 @@ export const TimeMatrix: React.FC<TimeMatrixProps> = ({
     uniqueDatesSet.add(dateKey);
     uniqueTimesSet.add(timeKey);
     
-    const timeMs = new Date(m.date).getTime();
+    // Verwende den zeitzonenangepassten Startzeitpunkt für die Sortierung
+    const d = new Date(m.date);
+    const timeMs = d.getTime();
     if (!dateMap[dateKey] || timeMs < dateMap[dateKey]) {
       dateMap[dateKey] = timeMs;
     }
@@ -133,6 +140,23 @@ export const TimeMatrix: React.FC<TimeMatrixProps> = ({
                             className={styles.miniMatchCard}
                             title={`${match.stage.replace('_', ' ')} - ${match.stadium}, ${match.city}`}
                           >
+                            <div className={styles.miniCardHeader}>
+                              <span className={styles.miniStage}>
+                                {match.stage === 'GROUP' ? `${lang === 'en' ? 'Gr.' : lang === 'es' ? 'Gr.' : lang === 'fr' ? 'Gr.' : lang === 'ru' ? 'Гр.' : lang === 'uk' ? 'Гр.' : 'Gr.'} ${match.group}` : match.stage.replace('ROUND_OF_', 'R').replace('QUARTER_FINALS', 'QF').replace('SEMI_FINALS', 'SF').replace('FINAL', 'F')}
+                              </span>
+                              <button 
+                                onClick={() => {
+                                  const stageDisplay = match.stage === 'GROUP' && match.group
+                                    ? (lang === 'en' ? `Group ${match.group}` : lang === 'es' ? `Grupo ${match.group}` : lang === 'fr' ? `Groupe ${match.group}` : lang === 'ru' ? `Группа ${match.group}` : lang === 'uk' ? `Група ${match.group}` : `Gruppe ${match.group}`)
+                                    : match.stage.replace(/_/g, ' ');
+                                  exportToIcs(match, home.name, away.name, stageDisplay);
+                                }}
+                                className={styles.miniCalendarBtn}
+                                title={lang === 'en' ? 'Add to Calendar' : lang === 'es' ? 'Añadir al calendario' : lang === 'fr' ? 'Ajouter au calendrier' : lang === 'ru' ? 'Добавить в календарь' : lang === 'uk' ? 'Додати до календаря' : 'In den Kalender eintragen'}
+                              >
+                                📅
+                              </button>
+                            </div>
                             <div className={styles.miniTeam}>
                               <span>{home.flag}</span>
                               <span className={styles.teamCode}>{match.homeTeam}</span>

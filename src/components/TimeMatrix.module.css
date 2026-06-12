@@ -116,3 +116,34 @@
   padding: 2px 0;
   margin: 2px 0;
 }
+
+.miniCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+}
+
+.miniStage {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.miniCalendarBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: var(--transition-smooth);
+}
+
+.miniCalendarBtn:hover {
+  transform: scale(1.2);
+}

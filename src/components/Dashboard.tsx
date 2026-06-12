@@ -23,6 +23,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [syncing, setSyncing] = useState(false);
   const [language, setLanguage] = useState<Language>('de');
   const [currentTeams, setCurrentTeams] = useState<Team[]>(teams);
+  const [timezone, setTimezone] = useState<string>('Europe/Berlin');
+
+  useEffect(() => {
+    try {
+      const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (systemTz) {
+        setTimezone(systemTz);
+      }
+    } catch (e) {
+      console.log('Failed to detect system timezone', e);
+    }
+  }, []);
+
+  const timezones = [
+    { value: 'America/New_York', label: 'New York (EST/EDT)' },
+    { value: 'America/Los_Angeles', label: 'Los Angeles (PST/PDT)' },
+    { value: 'America/Mexico_City', label: 'Mexico City (CST)' },
+    { value: 'America/Toronto', label: 'Toronto (EST/EDT)' },
+    { value: 'Europe/London', label: 'London (GMT/BST)' },
+    { value: 'Europe/Berlin', label: 'Berlin / Paris (CET/CEST)' },
+    { value: 'Europe/Kyiv', label: 'Kyiv (EET/EEST)' },
+    { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+    { value: 'UTC', label: 'UTC' }
+  ];
+
+  const timezoneOptions = [...timezones];
+  if (timezone && !timezones.some(t => t.value === timezone)) {
+    timezoneOptions.unshift({ value: timezone, label: `${timezone} (Local)` });
+  }
 
   // Initialisiere Matches und Teams aus API (Live-Daten), localStorage oder Props
   useEffect(() => {
@@ -141,26 +170,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         <h1 className={styles.title}>{t.title}</h1>
         <p className={styles.subtitle}>{t.subtitle}</p>
 
-        {/* Language Selector */}
-        <div className={styles.languageSelector}>
-          {(['de', 'en', 'es', 'fr', 'ru', 'uk'] as Language[]).map((lang) => {
-            const flags: Record<Language, string> = {
-              de: '🇩🇪', en: '🇬🇧', es: '🇪🇸', fr: '🇫🇷', ru: '🇷🇺', uk: '🇺🇦'
-            };
-            return (
-              <button
-                key={lang}
-                onClick={() => {
-                  setLanguage(lang);
-                  localStorage.setItem('wm_2026_lang', lang);
-                }}
-                className={`${styles.langBtn} ${language === lang ? styles.langBtnActive : ''}`}
-              >
-                <span>{flags[lang]}</span>
-                <span>{lang.toUpperCase()}</span>
-              </button>
-            );
-          })}
+        {/* Language Selector & Timezone Dropdown */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginTop: '1rem' }}>
+          <div className={styles.languageSelector} style={{ marginTop: 0 }}>
+            {(['de', 'en', 'es', 'fr', 'ru', 'uk'] as Language[]).map((lang) => {
+              const flags: Record<Language, string> = {
+                de: '🇩🇪', en: '🇬🇧', es: '🇪🇸', fr: '🇫🇷', ru: '🇷🇺', uk: '🇺🇦'
+              };
+              return (
+                <button
+                  key={lang}
+                  onClick={() => {
+                    setLanguage(lang);
+                    localStorage.setItem('wm_2026_lang', lang);
+                  }}
+                  className={`${styles.langBtn} ${language === lang ? styles.langBtnActive : ''}`}
+                >
+                  <span>{flags[lang]}</span>
+                  <span>{lang.toUpperCase()}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{t.selectTimezone}:</span>
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className={styles.knockoutSelect}
+              style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+            >
+              {timezoneOptions.map(tz => (
+                <option key={tz.value} value={tz.value}>{tz.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </header>
 
@@ -220,6 +264,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     match={match}
                     teams={currentTeams}
                     lang={language}
+                    timezone={timezone}
                   />
                 ))
               )}
@@ -271,6 +316,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     match={match}
                     teams={currentTeams}
                     lang={language}
+                    timezone={timezone}
                   />
                 ))
               )}
@@ -280,7 +326,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       )}
 
       {activeTab === 'MATRIX' && (
-        <TimeMatrix matches={matches} teams={currentTeams} lang={language} />
+        <TimeMatrix matches={matches} teams={currentTeams} lang={language} timezone={timezone} />
       )}
     </div>
   );

@@ -29,6 +29,7 @@ export interface TranslationDictionary {
   loading: string;
   penalty: string;
   timeMatrix: string;
+  selectTimezone: string;
 }
 
 export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
@@ -60,7 +61,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     allRounds: 'Alle Runden',
     loading: 'Lade...',
     penalty: 'Elfmeter',
-    timeMatrix: 'Zeit-Matrix'
+    timeMatrix: 'Zeit-Matrix',
+    selectTimezone: 'Zeitzone wählen'
   },
   en: {
     title: 'FIFA World Cup 2026',
@@ -90,7 +92,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     allRounds: 'All Rounds',
     loading: 'Loading...',
     penalty: 'Penalties',
-    timeMatrix: 'Time Matrix'
+    timeMatrix: 'Time Matrix',
+    selectTimezone: 'Select Timezone'
   },
   es: {
     title: 'Copa Mundial de la FIFA 2026',
@@ -120,7 +123,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     allRounds: 'Todas las rondas',
     loading: 'Cargando...',
     penalty: 'Penaltis',
-    timeMatrix: 'Matriz de tiempo'
+    timeMatrix: 'Matriz de tiempo',
+    selectTimezone: 'Seleccionar zona horaria'
   },
   fr: {
     title: 'Coupe du Monde de la FIFA 2026',
@@ -150,7 +154,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     allRounds: 'Tous les tours',
     loading: 'Chargement...',
     penalty: 'Tirs au but',
-    timeMatrix: 'Matrice de temps'
+    timeMatrix: 'Matrice de temps',
+    selectTimezone: 'Sélectionner le fuseau horaire'
   },
   ru: {
     title: 'Чемпионат мира по футболу 2026',
@@ -180,7 +185,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     allRounds: 'Все раунды',
     loading: 'Загрузка...',
     penalty: 'Пенальти',
-    timeMatrix: 'Матрица времени'
+    timeMatrix: 'Матрица времени',
+    selectTimezone: 'Выберите часовой пояс'
   },
   uk: {
     title: 'Чемпіонат світу з футболу 2026',
@@ -210,7 +216,8 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     allRounds: 'Всі раунди',
     loading: 'Завантаження...',
     penalty: 'Пенальті',
-    timeMatrix: 'Матриця часу'
+    timeMatrix: 'Матриця часу',
+    selectTimezone: 'Виберіть часовий пояс'
   }
 };
 

@@ -3,18 +3,21 @@
 import React from 'react';
 import { Match, Team } from '../types';
 import { TEAM_TRANSLATIONS, Language } from '../data/translations';
+import { exportToIcs } from '../services/calendarHelper';
 import styles from './MatchCard.module.css';
 
 interface MatchCardProps {
   match: Match;
   teams: Team[];
   lang?: string;
+  timezone?: string;
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({
   match,
   teams,
-  lang = 'de'
+  lang = 'de',
+  timezone = 'Europe/Berlin'
 }) => {
   const getTeamInfo = (teamId: string): { name: string; flag: string } => {
     const team = teams.find((t) => t.id === teamId);
@@ -52,6 +55,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       month: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: timezone
     }) + timeSuffix;
   };
 
@@ -101,8 +105,31 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         )}
       </div>
 
-      <div className={styles.footer} style={{ justifyContent: 'flex-start' }}>
+      <div className={styles.footer} style={{ justifyContent: 'space-between', width: '100%' }}>
         <span className={styles.dateText}>{formatDate(match.date)}</span>
+        <button 
+          onClick={() => {
+            const stageDisplay = match.stage === 'GROUP' && match.group
+              ? (lang === 'en' ? `Group ${match.group}` : lang === 'es' ? `Grupo ${match.group}` : lang === 'fr' ? `Groupe ${match.group}` : lang === 'ru' ? `Группа ${match.group}` : lang === 'uk' ? `Група ${match.group}` : `Gruppe ${match.group}`)
+              : match.stage.replace(/_/g, ' ');
+            exportToIcs(match, homeTeamInfo.name, awayTeamInfo.name, stageDisplay);
+          }}
+          className={styles.calendarExportBtn}
+          title={lang === 'en' ? 'Add to Calendar' : lang === 'es' ? 'Añadir al calendario' : lang === 'fr' ? 'Ajouter au calendrier' : lang === 'ru' ? 'Добавить в календарь' : lang === 'uk' ? 'Додати до календаря' : 'In den Kalender eintragen'}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            padding: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            transition: 'var(--transition-smooth)'
+          }}
+        >
+          📅
+        </button>
       </div>
     </div>
   );
