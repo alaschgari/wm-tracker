@@ -9,7 +9,7 @@ interface GroupStandingsProps {
 
 export const GroupStandings: React.FC<GroupStandingsProps> = ({ standings, teams }) => {
   const getTeamInfo = (teamId: string) => {
-    return teams.find((t) => t.id === teamId) || { name: teamId, flag: '🏳️' };
+    return teams.find((t) => t.id === teamId) || { id: teamId, name: teamId, flag: '🏳️' };
   };
 
   const getQualifyClass = (index: number) => {

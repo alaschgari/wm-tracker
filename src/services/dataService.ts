@@ -155,7 +155,7 @@ export const updateKnockoutMatches = (matches: Match[], teams: Team[]): Match[] 
     if (match.homeScore > match.awayScore) return match.homeTeam;
     if (match.homeScore < match.awayScore) return match.awayTeam;
     // Elfmeterschießen
-    if (match.homePenaltyScore !== undefined && match.awayPenaltyScore !== undefined) {
+    if (match.homePenaltyScore !== undefined && match.homePenaltyScore !== null && match.awayPenaltyScore !== undefined && match.awayPenaltyScore !== null) {
       if (match.homePenaltyScore > match.awayPenaltyScore) return match.homeTeam;
       if (match.homePenaltyScore < match.awayPenaltyScore) return match.awayTeam;
     }
@@ -169,7 +169,7 @@ export const updateKnockoutMatches = (matches: Match[], teams: Team[]): Match[] 
     }
     if (match.homeScore > match.awayScore) return match.awayTeam;
     if (match.homeScore < match.awayScore) return match.homeTeam;
-    if (match.homePenaltyScore !== undefined && match.awayPenaltyScore !== undefined) {
+    if (match.homePenaltyScore !== undefined && match.homePenaltyScore !== null && match.awayPenaltyScore !== undefined && match.awayPenaltyScore !== null) {
       if (match.homePenaltyScore > match.awayPenaltyScore) return match.awayTeam;
       if (match.homePenaltyScore < match.awayPenaltyScore) return match.homeTeam;
     }
