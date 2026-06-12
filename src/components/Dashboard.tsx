@@ -99,87 +99,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     }
   };
 
-  const handleScoreChange = (
-    matchId: number,
-    homeScore: number | null,
-    awayScore: number | null,
-    homePenaltyScore?: number | null,
-    awayPenaltyScore?: number | null,
-    finished?: boolean
-  ) => {
-    let updatedMatches = matches.map((m) => {
-      if (m.id === matchId) {
-        return {
-          ...m,
-          homeScore,
-          awayScore,
-          homePenaltyScore: homePenaltyScore ?? undefined,
-          awayPenaltyScore: awayPenaltyScore ?? undefined,
-          finished: finished ?? false,
-        };
-      }
-      return m;
-    });
-
-    // Berechne K.o.-Runden automatisch weiter
-    updatedMatches = updateKnockoutMatches(updatedMatches, currentTeams);
-
-    setMatches(updatedMatches);
-    localStorage.setItem('wm_2026_matches', JSON.stringify(updatedMatches));
-  };
-
-  // Simuliert alle noch nicht gespielten Partien
-  const simulateAllMatches = () => {
-    let simulated = matches.map((m) => {
-      if (m.finished) return m;
-
-      // Generiere realistische Fußball-Ergebnisse
-      const randomScore = () => {
-        const r = Math.random();
-        if (r < 0.3) return 0;
-        if (r < 0.6) return 1;
-        if (r < 0.8) return 2;
-        if (r < 0.93) return 3;
-        return 4;
-      };
-
-      const homeScore = randomScore();
-      const awayScore = randomScore();
-      let homePenaltyScore: number | undefined;
-      let awayPenaltyScore: number | undefined;
-
-      // Falls K.o.-Spiel und unentschieden -> Elfmeterschießen simulieren
-      if (m.stage !== 'GROUP' && homeScore === awayScore) {
-        const penHome = Math.floor(Math.random() * 3) + 3;
-        const penAway = penHome + (Math.random() > 0.5 ? 1 : -1);
-        homePenaltyScore = penHome;
-        awayPenaltyScore = penAway;
-      }
-
-      return {
-        ...m,
-        homeScore,
-        awayScore,
-        homePenaltyScore,
-        awayPenaltyScore,
-        finished: true,
-      };
-    });
-
-    // Propagation der Gewinner in K.o.-Spiele
-    simulated = updateKnockoutMatches(simulated, currentTeams);
-
-    setMatches(simulated);
-    localStorage.setItem('wm_2026_matches', JSON.stringify(simulated));
-  };
-
-  const resetAllMatches = () => {
-    if (confirm(t.resetConfirm)) {
-      setMatches(initialMatches);
-      localStorage.removeItem('wm_2026_matches');
-    }
-  };
-
   // Berechne aktuelle Tabellen
   const standings = calculateStandings(matches, currentTeams);
 
@@ -254,12 +173,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           <button onClick={syncLiveResults} disabled={syncing} className={styles.btn}>
             {syncing ? t.liveSyncing : t.liveSync}
           </button>
-          <button onClick={simulateAllMatches} className={`${styles.btn} ${styles.btnPrimary}`}>
-            {t.simulateAll}
-          </button>
-          <button onClick={resetAllMatches} className={`${styles.btn} ${styles.btnDanger}`}>
-            {t.reset}
-          </button>
         </div>
       </div>
 
@@ -289,10 +202,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     key={match.id}
                     match={match}
                     teams={currentTeams}
-                    onScoreChange={handleScoreChange}
-                    saveText={t.finalize}
-                    savedText={t.saved}
-                    penaltyText={t.penalty}
                     lang={language}
                   />
                 ))
@@ -341,10 +250,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     key={match.id}
                     match={match}
                     teams={currentTeams}
-                    onScoreChange={handleScoreChange}
-                    saveText={t.finalize}
-                    savedText={t.saved}
-                    penaltyText={t.penalty}
                     lang={language}
                   />
                 ))
