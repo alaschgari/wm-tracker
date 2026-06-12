@@ -1,4 +1,6 @@
-import { Team, Match, GroupStanding } from '../types';
+import { Team, Match, GroupStanding, Stage } from '../types';
+import { TEAMS } from '../data/initialData';
+
 
 export const calculateStandings = (matches: Match[], teams: Team[]): Record<string, GroupStanding[]> => {
   const standings: Record<string, GroupStanding[]> = {};
@@ -221,4 +223,85 @@ export const updateKnockoutMatches = (matches: Match[], teams: Team[]): Match[] 
 
   return updated;
 };
+
+export const fetchLiveMatches = async (): Promise<Match[]> => {
+  try {
+    const res = await fetch('https://api.openligadb.de/getmatchdata/wm26/2026', {
+      next: { revalidate: 60 } // Next.js native Cache Revalidation (60 Sekunden)
+    });
+    if (!res.ok) throw new Error('Fehler beim Laden der API');
+    
+    const apiMatches = await res.json();
+    if (!Array.isArray(apiMatches)) return [];
+
+    return apiMatches.map((m: any, index: number) => {
+      const homeTeam = m.team1.shortName || m.team1.teamName;
+      const awayTeam = m.team2.shortName || m.team2.teamName;
+
+      // Ermittle die Stage
+      const groupName = m.group.groupName || '';
+      let stage: Stage = 'GROUP';
+      if (groupName.includes('Runde der 32') || groupName.includes('Sechzehntelfinale')) stage = 'ROUND_OF_32';
+      else if (groupName.includes('Achtelfinale')) stage = 'ROUND_OF_16';
+      else if (groupName.includes('Viertelfinale')) stage = 'QUARTER_FINALS';
+      else if (groupName.includes('Halbfinale')) stage = 'SEMI_FINALS';
+      else if (groupName.includes('Platz 3') || groupName.includes('Dritter')) stage = 'THIRD_PLACE';
+      else if (groupName.includes('Finale')) stage = 'FINAL';
+
+      // Ermittle die Gruppe für Gruppenspiele
+      let group: string | undefined;
+      if (stage === 'GROUP') {
+        const teamObj = TEAMS.find(t => t.id === homeTeam || t.name === m.team1.teamName);
+        group = teamObj ? teamObj.group : 'A';
+      }
+
+      // Extrahiere Tore
+      let homeScore: number | null = null;
+      let awayScore: number | null = null;
+      let homePenaltyScore: number | undefined;
+      let awayPenaltyScore: number | undefined;
+
+      if (m.matchIsFinished && m.matchResults && m.matchResults.length > 0) {
+        // Finde das Endergebnis (regulär oder nach Verlängerung/Elfmeter)
+        const finalResult = m.matchResults.find((r: any) => 
+          r.resultName === 'Endergebnis' || 
+          r.resultName === 'Ergebnis nach Verlängerung' || 
+          r.resultName === 'Ergebnis nach Elfmeterschießen'
+        ) || m.matchResults[m.matchResults.length - 1];
+
+        if (finalResult) {
+          homeScore = finalResult.pointsTeam1;
+          awayScore = finalResult.pointsTeam2;
+        }
+
+        // Falls Elfmeterschießen vorliegt
+        const penaltyResult = m.matchResults.find((r: any) => r.resultName === 'Ergebnis nach Elfmeterschießen');
+        if (penaltyResult) {
+          homePenaltyScore = penaltyResult.pointsTeam1;
+          awayPenaltyScore = penaltyResult.pointsTeam2;
+        }
+      }
+
+      return {
+        id: index + 1,
+        homeTeam,
+        awayTeam,
+        homeScore,
+        awayScore,
+        homePenaltyScore,
+        awayPenaltyScore,
+        date: m.matchDateTimeUTC || m.matchDateTime,
+        stage,
+        group,
+        stadium: m.location?.stadiumName || 'Stadion',
+        city: m.location?.city || 'Gastgeberstadt',
+        finished: m.matchIsFinished
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch live matches:', error);
+    throw error;
+  }
+};
+
 

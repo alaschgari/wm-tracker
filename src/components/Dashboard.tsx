@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
-import { calculateStandings, updateKnockoutMatches } from '../services/dataService';
+import { calculateStandings, updateKnockoutMatches, fetchLiveMatches } from '../services/dataService';
 import styles from '../app/page.module.css';
 
 interface DashboardProps {
@@ -19,24 +19,61 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [selectedKnockoutStage, setSelectedKnockoutStage] = useState<Stage | 'ALL'>('ALL');
   const [mounted, setMounted] = useState(false);
 
-  // Initialisiere Matches aus localStorage oder Props
+  const [syncing, setSyncing] = useState(false);
+
+  // Initialisiere Matches aus API (Live-Daten), localStorage oder Props
   useEffect(() => {
-    const saved = localStorage.getItem('wm_2026_matches');
-    if (saved) {
+    const loadData = async () => {
+      // 1. Versuche Live-Daten zu laden
       try {
-        setMatches(JSON.parse(saved));
-      } catch (e) {
+        const live = await fetchLiveMatches();
+        if (live && live.length > 0) {
+          const propagated = updateKnockoutMatches(live, teams);
+          setMatches(propagated);
+          localStorage.setItem('wm_2026_matches', JSON.stringify(propagated));
+          setMounted(true);
+          return;
+        }
+      } catch (err) {
+        console.log('Failed to fetch live matches on mount, fallback to localStorage', err);
+      }
+
+      // 2. Fallback auf localStorage oder Props
+      const saved = localStorage.getItem('wm_2026_matches');
+      if (saved) {
+        try {
+          setMatches(JSON.parse(saved));
+        } catch (e) {
+          setMatches(initialMatches);
+        }
+      } else {
         setMatches(initialMatches);
       }
-    } else {
-      setMatches(initialMatches);
-    }
-    setMounted(true);
-  }, [initialMatches]);
+      setMounted(true);
+    };
+
+    loadData();
+  }, [initialMatches, teams]);
 
   if (!mounted) {
     return <div className={styles.emptyState}>Lade WM Tracker...</div>;
   }
+
+  const syncLiveResults = async () => {
+    setSyncing(true);
+    try {
+      const live = await fetchLiveMatches();
+      if (live && live.length > 0) {
+        const propagated = updateKnockoutMatches(live, teams);
+        setMatches(propagated);
+        localStorage.setItem('wm_2026_matches', JSON.stringify(propagated));
+      }
+    } catch (e) {
+      alert('Fehler beim Abrufen der Live-Daten.');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleScoreChange = (
     matchId: number,
@@ -170,6 +207,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         </div>
 
         <div className={styles.buttonGroup}>
+          <button onClick={syncLiveResults} disabled={syncing} className={styles.btn}>
+            {syncing ? '⌛ Synchronisiere...' : '🔄 Live-Sync'}
+          </button>
           <button onClick={simulateAllMatches} className={`${styles.btn} ${styles.btnPrimary}`}>
             ⚡ Alle simulieren
           </button>
