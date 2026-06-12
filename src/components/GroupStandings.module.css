@@ -1,0 +1,90 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.groupCard {
+  padding: 1rem;
+}
+
+.groupTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.25rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}
+
+.table td {
+  padding: 6px;
+  text-align: center;
+}
+
+.teamRow {
+  transition: var(--transition-smooth);
+}
+
+.teamRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rank {
+  font-weight: 700;
+  width: 20px;
+  display: inline-block;
+}
+
+/* Qualifikations-Indikatoren am linken Rand der Zeilen */
+.qualifyDirect {
+  border-left: 3px solid var(--accent-green);
+}
+
+.qualifyThird {
+  border-left: 3px solid var(--accent-blue);
+}
+
+.eliminate {
+  border-left: 3px solid var(--accent-red);
+}
+
+.teamNameCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.flag {
+  font-size: 1.1rem;
+}
+
+.points {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pointsGlow {
+  color: var(--accent-gold);
+  text-shadow: 0 0 8px var(--accent-gold-glow);
+}

@@ -1,0 +1,224 @@
+import { Team, Match, GroupStanding } from '../types';
+
+export const calculateStandings = (matches: Match[], teams: Team[]): Record<string, GroupStanding[]> => {
+  const standings: Record<string, GroupStanding[]> = {};
+
+  // Initialisiere Tabellen für alle Teams
+  teams.forEach((team) => {
+    if (!standings[team.group]) {
+      standings[team.group] = [];
+    }
+    standings[team.group].push({
+      teamId: team.id,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      points: 0,
+    });
+  });
+
+  // Nur Gruppenspiele auswerten
+  const groupMatches = matches.filter((m) => m.stage === 'GROUP');
+
+  groupMatches.forEach((match) => {
+    const { homeTeam, awayTeam, homeScore, awayScore, finished } = match;
+    if (!finished || homeScore === null || awayScore === null) return;
+
+    const homeTeamObj = teams.find((t) => t.id === homeTeam);
+    const awayTeamObj = teams.find((t) => t.id === awayTeam);
+
+    if (!homeTeamObj || !awayTeamObj) return;
+
+    const homeStanding = standings[homeTeamObj.group]?.find((s) => s.teamId === homeTeam);
+    const awayStanding = standings[awayTeamObj.group]?.find((s) => s.teamId === awayTeam);
+
+    if (!homeStanding || !awayStanding) return;
+
+    homeStanding.played += 1;
+    awayStanding.played += 1;
+
+    homeStanding.goalsFor += homeScore;
+    homeStanding.goalsAgainst += awayScore;
+    awayStanding.goalsFor += awayScore;
+    awayStanding.goalsAgainst += homeScore;
+
+    homeStanding.goalDifference = homeStanding.goalsFor - homeStanding.goalsAgainst;
+    awayStanding.goalDifference = awayStanding.goalsFor - awayStanding.goalsAgainst;
+
+    if (homeScore > awayScore) {
+      homeStanding.won += 1;
+      homeStanding.points += 3;
+      awayStanding.lost += 1;
+    } else if (homeScore < awayScore) {
+      awayStanding.won += 1;
+      awayStanding.points += 3;
+      homeStanding.lost += 1;
+    } else {
+      homeStanding.drawn += 1;
+      homeStanding.points += 1;
+      awayStanding.drawn += 1;
+      awayStanding.points += 1;
+    }
+  });
+
+  // Sortiere jede Gruppe nach Punkten, Tordifferenz, erzielten Toren
+  Object.keys(standings).forEach((groupName) => {
+    standings[groupName].sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+      return b.goalsFor - a.goalsFor;
+    });
+  });
+
+  return standings;
+};
+
+export const updateKnockoutMatches = (matches: Match[], teams: Team[]): Match[] => {
+  const updated = [...matches];
+  const standings = calculateStandings(updated, teams);
+
+  // 1. Runde der 32 (Spiele 73-88, Indizes 72-87)
+  // Wir ordnen die Teams basierend auf der Gruppenplatzierung zu.
+  // Da die echten Zuweisungen extrem komplex sind, nutzen wir ein stabiles, deterministisches Schema:
+  // Spiel 73: 1A vs 3C/D/E/F, Spiel 74: 2A vs 2B, etc.
+  const getTeamByRank = (group: string, rank: number): string => {
+    const groupStandings = standings[group];
+    if (!groupStandings || groupStandings.length < rank) return `Platz ${rank} Gruppe ${group}`;
+    const team = teams.find((t) => t.id === groupStandings[rank - 1].teamId);
+    return team ? team.id : `Platz ${rank} Gruppe ${group}`;
+  };
+
+  // Finde die besten Gruppendritten (12 Gruppen, wir brauchen die Top 8)
+  const allThirds: { teamId: string; group: string; points: number; goalDifference: number; goalsFor: number }[] = [];
+  Object.entries(standings).forEach(([groupName, groupStandings]) => {
+    if (groupStandings.length >= 3) {
+      const third = groupStandings[2];
+      allThirds.push({
+        teamId: third.teamId,
+        group: groupName,
+        points: third.points,
+        goalDifference: third.goalDifference,
+        goalsFor: third.goalsFor
+      });
+    }
+  });
+  allThirds.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+    return b.goalsFor - a.goalsFor;
+  });
+
+  const topThirds = allThirds.slice(0, 8);
+  const getThirdTeam = (index: number): string => {
+    if (index >= topThirds.length) return `Bester Dritter #${index + 1}`;
+    return topThirds[index].teamId;
+  };
+
+  // R32 Paarungen (Matches 73 bis 88, index 72 bis 87)
+  const r32Mappings = [
+    { home: () => getTeamByRank('A', 1), away: () => getThirdTeam(0) }, // Spiel 73
+    { home: () => getTeamByRank('B', 1), away: () => getThirdTeam(1) }, // Spiel 74
+    { home: () => getTeamByRank('C', 1), away: () => getThirdTeam(2) }, // Spiel 75
+    { home: () => getTeamByRank('D', 1), away: () => getThirdTeam(3) }, // ...
+    { home: () => getTeamByRank('E', 1), away: () => getThirdTeam(4) },
+    { home: () => getTeamByRank('F', 1), away: () => getThirdTeam(5) },
+    { home: () => getTeamByRank('G', 1), away: () => getThirdTeam(6) },
+    { home: () => getTeamByRank('H', 1), away: () => getThirdTeam(7) },
+    { home: () => getTeamByRank('I', 1), away: () => getTeamByRank('J', 2) },
+    { home: () => getTeamByRank('K', 1), away: () => getTeamByRank('L', 2) },
+    { home: () => getTeamByRank('A', 2), away: () => getTeamByRank('B', 2) },
+    { home: () => getTeamByRank('C', 2), away: () => getTeamByRank('D', 2) },
+    { home: () => getTeamByRank('E', 2), away: () => getTeamByRank('F', 2) },
+    { home: () => getTeamByRank('G', 2), away: () => getTeamByRank('H', 2) },
+    { home: () => getTeamByRank('I', 2), away: () => getTeamByRank('K', 2) },
+    { home: () => getTeamByRank('J', 1), away: () => getTeamByRank('L', 1) }, // Spiel 88
+  ];
+
+  for (let i = 0; i < 16; i++) {
+    const match = updated[72 + i];
+    if (match) {
+      match.homeTeam = r32Mappings[i].home();
+      match.awayTeam = r32Mappings[i].away();
+    }
+  }
+
+  // Hilfsfunktion zum Bestimmen des Siegers eines K.o.-Spiels
+  const getWinnerOfMatch = (matchId: number): string => {
+    const match = updated.find((m) => m.id === matchId);
+    if (!match || !match.finished || match.homeScore === null || match.awayScore === null) {
+      return `Sieger Spiel ${matchId}`;
+    }
+    if (match.homeScore > match.awayScore) return match.homeTeam;
+    if (match.homeScore < match.awayScore) return match.awayTeam;
+    // Elfmeterschießen
+    if (match.homePenaltyScore !== undefined && match.awayPenaltyScore !== undefined) {
+      if (match.homePenaltyScore > match.awayPenaltyScore) return match.homeTeam;
+      if (match.homePenaltyScore < match.awayPenaltyScore) return match.awayTeam;
+    }
+    return `Sieger Spiel ${matchId}`;
+  };
+
+  const getLoserOfMatch = (matchId: number): string => {
+    const match = updated.find((m) => m.id === matchId);
+    if (!match || !match.finished || match.homeScore === null || match.awayScore === null) {
+      return `Verlierer Spiel ${matchId}`;
+    }
+    if (match.homeScore > match.awayScore) return match.awayTeam;
+    if (match.homeScore < match.awayScore) return match.homeTeam;
+    if (match.homePenaltyScore !== undefined && match.awayPenaltyScore !== undefined) {
+      if (match.homePenaltyScore > match.awayPenaltyScore) return match.awayTeam;
+      if (match.homePenaltyScore < match.awayPenaltyScore) return match.homeTeam;
+    }
+    return `Verlierer Spiel ${matchId}`;
+  };
+
+  // 2. Achtelfinale (Spiele 89-96, Indizes 88-95)
+  // AF 1: Sieger 73 vs Sieger 74
+  // ...
+  for (let i = 0; i < 8; i++) {
+    const match = updated[88 + i];
+    if (match) {
+      match.homeTeam = getWinnerOfMatch(73 + i * 2);
+      match.awayTeam = getWinnerOfMatch(74 + i * 2);
+    }
+  }
+
+  // 3. Viertelfinale (Spiele 97-100, Indizes 96-99)
+  for (let i = 0; i < 4; i++) {
+    const match = updated[96 + i];
+    if (match) {
+      match.homeTeam = getWinnerOfMatch(89 + i * 2);
+      match.awayTeam = getWinnerOfMatch(90 + i * 2);
+    }
+  }
+
+  // 4. Halbfinale (Spiele 101-102, Indizes 100-101)
+  for (let i = 0; i < 2; i++) {
+    const match = updated[100 + i];
+    if (match) {
+      match.homeTeam = getWinnerOfMatch(97 + i * 2);
+      match.awayTeam = getWinnerOfMatch(98 + i * 2);
+    }
+  }
+
+  // 5. Spiel um Platz 3 (Spiel 103, Index 102)
+  const thirdPlaceMatch = updated[102];
+  if (thirdPlaceMatch) {
+    thirdPlaceMatch.homeTeam = getLoserOfMatch(101);
+    thirdPlaceMatch.awayTeam = getLoserOfMatch(102);
+  }
+
+  // 6. Finale (Spiel 104, Index 103)
+  const finalMatch = updated[103];
+  if (finalMatch) {
+    finalMatch.homeTeam = getWinnerOfMatch(101);
+    finalMatch.awayTeam = getWinnerOfMatch(102);
+  }
+
+  return updated;
+};
+
