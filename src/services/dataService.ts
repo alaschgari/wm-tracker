@@ -238,6 +238,21 @@ const EMOJI_MAP: Record<string, string> = {
   ITA: '🇮🇹', NGA: '🇳🇬', POL: '🇵🇱', JAM: '🇯🇲'
 };
 
+const OFFICIAL_GROUPS: Record<string, string> = {
+  MEX: 'A', KOR: 'A', CZE: 'A', RSA: 'A',
+  CAN: 'B', BIH: 'B', QAT: 'B', CHE: 'B',
+  BRA: 'C', MAR: 'C', HTI: 'C', SCT: 'C',
+  USA: 'D', PAR: 'D', AUS: 'D', TUR: 'D',
+  CUW: 'E', DEU: 'E', ECU: 'E', CIV: 'E',
+  JPN: 'F', NLD: 'F', SWE: 'F', TUN: 'F',
+  BEL: 'G', EGY: 'G', IRN: 'G', NZL: 'G',
+  CPV: 'H', SAU: 'H', ESP: 'H', URY: 'H',
+  FRA: 'I', SEN: 'I', IRQ: 'I', NOR: 'I',
+  ARG: 'J', DZA: 'J', JOR: 'J', AUT: 'J',
+  PRT: 'K', UZB: 'K', COL: 'K', COD: 'K',
+  ENG: 'L', GHA: 'L', PAN: 'L', HRV: 'L'
+};
+
 export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Team[] }> => {
   try {
     const res = await fetch('https://api.openligadb.de/getmatchdata/wm26/2026', {
@@ -248,56 +263,7 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
     const apiMatches = await res.json();
     if (!Array.isArray(apiMatches)) return { matches: [], teams: [] };
 
-    // Cliquen-Algorithmus zur Gruppenbildung
-    const adj: Record<string, Set<string>> = {};
-    apiMatches.forEach((m: any) => {
-      const gName = m.group?.groupName || '';
-      if (gName.startsWith('Gruppenphase')) {
-        const t1 = m.team1.shortName || m.team1.teamName;
-        const t2 = m.team2.shortName || m.team2.teamName;
-        if (t1 && t2) {
-          if (!adj[t1]) adj[t1] = new Set();
-          if (!adj[t2]) adj[t2] = new Set();
-          adj[t1].add(t2);
-          adj[t2].add(t1);
-        }
-      }
-    });
-
-    const visited = new Set<string>();
-    const cliques: string[][] = [];
-    Object.keys(adj).forEach((team) => {
-      if (!visited.has(team)) {
-        const clique: string[] = [];
-        const queue = [team];
-        visited.add(team);
-        while (queue.length > 0) {
-          const curr = queue.shift()!;
-          clique.push(curr);
-          adj[curr]?.forEach((neighbor) => {
-            if (!visited.has(neighbor)) {
-              visited.add(neighbor);
-              queue.push(neighbor);
-            }
-          });
-        }
-        cliques.push(clique);
-      }
-    });
-
-    // Sortiere Cliquen nach dem ersten Element, um stabile Gruppen-Zuweisung zu sichern
-    cliques.sort((a, b) => a[0].localeCompare(b[0]));
-
-    const groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-    const teamToGroup: Record<string, string> = {};
-    cliques.forEach((clique, idx) => {
-      const groupName = groupNames[idx] || `G${idx + 1}`;
-      clique.forEach((team) => {
-        teamToGroup[team] = groupName;
-      });
-    });
-
-    // Erstelle Team-Liste
+    // Erstelle Team-Liste basierend auf echten Gruppen
     const teamsMap: Record<string, Team> = {};
     apiMatches.forEach((m: any) => {
       const processTeam = (t: any) => {
@@ -308,7 +274,7 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
             id,
             name: t.teamName,
             flag: EMOJI_MAP[id] || '🏳️',
-            group: teamToGroup[id] || 'A'
+            group: OFFICIAL_GROUPS[id] || 'A'
           };
         }
       };
@@ -333,7 +299,7 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
       else if (groupName.includes('Finale')) stage = 'FINAL';
 
       // Ermittle die Gruppe
-      const group = stage === 'GROUP' ? (teamToGroup[homeTeam] || 'A') : undefined;
+      const group = stage === 'GROUP' ? (OFFICIAL_GROUPS[homeTeam] || 'A') : undefined;
 
       // Extrahiere Tore
       let homeScore: number | null = null;
