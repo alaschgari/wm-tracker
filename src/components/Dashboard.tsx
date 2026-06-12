@@ -21,30 +21,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [selectedKnockoutStage, setSelectedKnockoutStage] = useState<Stage | 'ALL'>('ALL');
   const [mounted, setMounted] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [language, setLanguage] = useState<Language>('de');
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('wm_2026_lang') as Language;
+      if (savedLang && ['de', 'en', 'es', 'fr', 'ru', 'uk'].includes(savedLang)) {
+        return savedLang;
+      }
+    }
+    return 'de';
+  });
   const [currentTeams, setCurrentTeams] = useState<Team[]>(teams);
-  const [timezone, setTimezone] = useState<string>('Europe/Berlin');
-  const [favorites, setFavorites] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (systemTz) {
-        setTimezone(systemTz);
+  const [timezone, setTimezone] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin';
+      } catch (e) {
+        return 'Europe/Berlin';
       }
-    } catch (e) {
-      console.log('Failed to detect system timezone', e);
     }
-
-    try {
-      const savedFavorites = localStorage.getItem('wm_2026_favorites');
-      if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
+    return 'Europe/Berlin';
+  });
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedFavorites = localStorage.getItem('wm_2026_favorites');
+        if (savedFavorites) {
+          return JSON.parse(savedFavorites);
+        }
+      } catch (e) {
+        console.log('Failed to load favorites', e);
       }
-    } catch (e) {
-      console.log('Failed to load favorites', e);
     }
-  }, []);
+    return [];
+  });
 
   const toggleFavorite = (teamId: string) => {
     if (!teamId || teamId.startsWith('W') || teamId.startsWith('RU') || teamId.includes(' ') || teamId.length > 3) return;
@@ -84,10 +93,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       localStorage.setItem('wm_2026_version', APP_VERSION);
     }
 
-    const savedLang = localStorage.getItem('wm_2026_lang') as Language;
-    if (savedLang && ['de', 'en', 'es', 'fr', 'ru', 'uk'].includes(savedLang)) {
-      setLanguage(savedLang);
-    }
+
     const loadData = async () => {
       // 1. Versuche Live-Daten zu laden
       try {
@@ -135,18 +141,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   }, [initialMatches, teams]);
 
   // Berechne aktuelle Tabellen
-  const standings = calculateStandings(matches, currentTeams);
+  const standings = React.useMemo(() => calculateStandings(matches, currentTeams), [matches, currentTeams]);
 
   // Filtere Matches nach Gruppenphase vs K.o.-Phase
-  const filteredMatches = matches.filter((m) => {
-    if (activeTab === 'GROUP') {
-      if (m.stage !== 'GROUP') return false;
-      return selectedGroup === 'ALL' || m.group === selectedGroup;
-    } else {
-      if (m.stage === 'GROUP') return false;
-      return selectedKnockoutStage === 'ALL' || m.stage === selectedKnockoutStage;
-    }
-  });
+  const filteredMatches = React.useMemo(() => {
+    return matches.filter((m) => {
+      if (activeTab === 'GROUP') {
+        if (m.stage !== 'GROUP') return false;
+        return selectedGroup === 'ALL' || m.group === selectedGroup;
+      } else {
+        if (m.stage === 'GROUP') return false;
+        return selectedKnockoutStage === 'ALL' || m.stage === selectedKnockoutStage;
+      }
+    });
+  }, [matches, activeTab, selectedGroup, selectedKnockoutStage]);
+
 
 
 
@@ -301,11 +310,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
               standings={standings}
               teams={currentTeams}
               lang={language}
-              teamLabel={language === 'en' ? 'Team' : language === 'es' ? 'Equipo' : language === 'fr' ? 'Équipe' : language === 'ru' ? 'Команда' : language === 'uk' ? 'Команда' : 'Team'}
-              playedLabel={language === 'en' ? 'GP' : language === 'fr' ? 'MJ' : language === 'es' ? 'PJ' : language === 'ru' ? 'И' : language === 'uk' ? 'І' : 'Sp'}
-              diffLabel={language === 'en' ? 'GD' : language === 'fr' ? 'DB' : language === 'es' ? 'DG' : language === 'ru' ? 'РМ' : language === 'uk' ? 'РМ' : 'TD'}
-              pointsLabel={language === 'en' ? 'Pts' : language === 'fr' ? 'Pts' : language === 'es' ? 'Pts' : language === 'ru' ? 'О' : language === 'uk' ? 'О' : 'Pkt'}
-              groupLabel={t.group}
               favorites={favorites}
               toggleFavorite={toggleFavorite}
             />

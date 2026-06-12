@@ -1,6 +1,40 @@
 import { Team, Match, GroupStanding, Stage } from '../types';
 import { TEAMS } from '../data/initialData';
 
+interface OpenLigaTeam {
+  teamId: number;
+  teamName: string;
+  shortName: string;
+  teamIconUrl?: string;
+}
+
+interface OpenLigaResult {
+  resultId: number;
+  resultName: string;
+  pointsTeam1: number;
+  pointsTeam2: number;
+}
+
+interface OpenLigaLocation {
+  stadiumName?: string;
+  city?: string;
+}
+
+interface OpenLigaMatch {
+  matchID: number;
+  matchDateTime: string;
+  matchDateTimeUTC?: string;
+  group?: {
+    groupName: string;
+    groupID: number;
+  };
+  team1: OpenLigaTeam | null;
+  team2: OpenLigaTeam | null;
+  matchResults?: OpenLigaResult[];
+  matchIsFinished: boolean;
+  location?: OpenLigaLocation;
+}
+
 
 export const calculateStandings = (matches: Match[], teams: Team[]): Record<string, GroupStanding[]> => {
   const standings: Record<string, GroupStanding[]> = {};
@@ -80,7 +114,7 @@ export const calculateStandings = (matches: Match[], teams: Team[]): Record<stri
 };
 
 export const updateKnockoutMatches = (matches: Match[], teams: Team[]): Match[] => {
-  let updated = [...matches];
+  const updated = [...matches];
   
   // Wenn nur Gruppenspiele geladen wurden (z.B. 72 Spiele von der API),
   // generieren wir die Platzhalter für die K.o.-Phase dynamically.
@@ -396,13 +430,13 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
     });
     if (!res.ok) throw new Error('Fehler beim Laden der API');
     
-    const apiMatches = await res.json();
+    const apiMatches = (await res.json()) as OpenLigaMatch[];
     if (!Array.isArray(apiMatches)) return { matches: [], teams: [] };
 
     // Erstelle Team-Liste basierend auf echten Gruppen
     const teamsMap: Record<string, Team> = {};
-    apiMatches.forEach((m: any) => {
-      const processTeam = (t: any) => {
+    apiMatches.forEach((m: OpenLigaMatch) => {
+      const processTeam = (t: OpenLigaTeam | null) => {
         if (!t) return;
         const id = t.shortName || t.teamName;
         if (!teamsMap[id]) {
@@ -420,7 +454,7 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
 
     const dynamicTeams = Object.values(teamsMap);
 
-    const matches = apiMatches.map((m: any, index: number) => {
+    const matches = apiMatches.map((m: OpenLigaMatch, index: number) => {
       // Sicheres Parsen der Team-IDs/Namen
       const homeTeam = m.team1 ? (m.team1.shortName || m.team1.teamName) : `TBD (Heim)`;
       const awayTeam = m.team2 ? (m.team2.shortName || m.team2.teamName) : `TBD (Gast)`;
@@ -469,7 +503,7 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
       }
 
       // Ermittle die Gruppe basierend auf OFFICIAL_GROUPS
-      let group = stage === 'GROUP' ? (OFFICIAL_GROUPS[homeTeam] || OFFICIAL_GROUPS[awayTeam]) : undefined;
+      const group = stage === 'GROUP' ? (OFFICIAL_GROUPS[homeTeam] || OFFICIAL_GROUPS[awayTeam]) : undefined;
 
       // Wenn die Klassifizierung GROUP ergab, aber keines der Teams in OFFICIAL_GROUPS liegt,
       // handelt es sich wahrscheinlich um ein K.o.-Spiel mit Platzhaltern (z. B. "Sieger Spiel X").
@@ -485,7 +519,7 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
       let awayPenaltyScore: number | undefined;
 
       if (m.matchResults && m.matchResults.length > 0) {
-        const finalResult = m.matchResults.find((r: any) => 
+        const finalResult = m.matchResults.find((r: OpenLigaResult) => 
           r.resultName === 'Endergebnis' || 
           r.resultName === 'Ergebnis nach Verlängerung' || 
           r.resultName === 'Ergebnis nach Elfmeterschießen'
@@ -496,7 +530,7 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
           awayScore = finalResult.pointsTeam2;
         }
 
-        const penaltyResult = m.matchResults.find((r: any) => r.resultName === 'Ergebnis nach Elfmeterschießen');
+        const penaltyResult = m.matchResults.find((r: OpenLigaResult) => r.resultName === 'Ergebnis nach Elfmeterschießen');
         if (penaltyResult) {
           homePenaltyScore = penaltyResult.pointsTeam1;
           awayPenaltyScore = penaltyResult.pointsTeam2;
@@ -538,10 +572,17 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
 
     return { matches, teams: dynamicTeams };
   } catch (error) {
-    console.error('Failed to fetch live matches:', error);
-    throw error;
+    console.error('Failed to fetch live matches, falling back to initial data:', error);
+    try {
+      const { generateInitialMatches } = await import('../data/initialData');
+      return { matches: generateInitialMatches(), teams: TEAMS };
+    } catch (importError) {
+      console.error('Fallback failed too:', importError);
+      return { matches: [], teams: TEAMS };
+    }
   }
 };
+
 
 export const fetchLiveMatchesFromApi = async (): Promise<{ matches: Match[]; teams: Team[] }> => {
   const res = await fetch('/api/matches');

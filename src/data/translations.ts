@@ -31,7 +31,12 @@ export interface TranslationDictionary {
   timeMatrix: string;
   selectTimezone: string;
   favoriteTooltip: string;
+  teamLabel: string;
+  playedLabel: string;
+  diffLabel: string;
+  pointsLabel: string;
 }
+
 
 export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
   de: {
@@ -64,8 +69,13 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     penalty: 'Elfmeter',
     timeMatrix: 'Zeit-Matrix',
     selectTimezone: 'Zeitzone wählen',
-    favoriteTooltip: 'Lieblingsland markieren/entfernen'
+    favoriteTooltip: 'Lieblingsland markieren/entfernen',
+    teamLabel: 'Team',
+    playedLabel: 'Sp',
+    diffLabel: 'TD',
+    pointsLabel: 'Pkt'
   },
+
   en: {
     title: 'FIFA World Cup 2026',
     subtitle: 'Results tracker & interactive tournament simulator. Enter scores or simulate the entire tournament.',
@@ -96,8 +106,13 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     penalty: 'Penalties',
     timeMatrix: 'Time Matrix',
     selectTimezone: 'Select Timezone',
-    favoriteTooltip: 'Toggle favorite country'
+    favoriteTooltip: 'Toggle favorite country',
+    teamLabel: 'Team',
+    playedLabel: 'GP',
+    diffLabel: 'GD',
+    pointsLabel: 'Pts'
   },
+
   es: {
     title: 'Copa Mundial de la FIFA 2026',
     subtitle: 'Rastreador de resultados y simulador interactivo de torneos. Introduce goles o simula todo el torneo.',
@@ -128,8 +143,13 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     penalty: 'Penaltis',
     timeMatrix: 'Matriz de tiempo',
     selectTimezone: 'Seleccionar zona horaria',
-    favoriteTooltip: 'Marcar/desmarcar país favorito'
+    favoriteTooltip: 'Marcar/desmarcar país favorito',
+    teamLabel: 'Equipo',
+    playedLabel: 'PJ',
+    diffLabel: 'DG',
+    pointsLabel: 'Pts'
   },
+
   fr: {
     title: 'Coupe du Monde de la FIFA 2026',
     subtitle: 'Suivi des résultats & simulateur interactif. Saisissez les scores ou simulez l’ensemble du tournoi.',
@@ -160,8 +180,13 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     penalty: 'Tirs au but',
     timeMatrix: 'Matrice de temps',
     selectTimezone: 'Sélectionner le fuseau horaire',
-    favoriteTooltip: 'Ajouter/retirer des pays favoris'
+    favoriteTooltip: 'Ajouter/retirer des pays favoris',
+    teamLabel: 'Équipe',
+    playedLabel: 'MJ',
+    diffLabel: 'DB',
+    pointsLabel: 'Pts'
   },
+
   ru: {
     title: 'Чемпионат мира по футболу 2026',
     subtitle: 'Трекер результатов и интерактивный симулятор. Вводите голы или симулируйте весь турнир.',
@@ -192,8 +217,13 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     penalty: 'Пенальти',
     timeMatrix: 'Матрица времени',
     selectTimezone: 'Выберите часовой пояс',
-    favoriteTooltip: 'Добавить/удалить любимую страну'
+    favoriteTooltip: 'Добавить/удалить любимую страну',
+    teamLabel: 'Команда',
+    playedLabel: 'И',
+    diffLabel: 'РМ',
+    pointsLabel: 'О'
   },
+
   uk: {
     title: 'Чемпіонат світу з футболу 2026',
     subtitle: 'Трекер результатів та інтерактивний симулятор. Вводьте голи або симулюйте весь турнір.',
@@ -224,7 +254,11 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     penalty: 'Пенальті',
     timeMatrix: 'Матриця часу',
     selectTimezone: 'Виберіть часовий пояс',
-    favoriteTooltip: 'Додати/видалити улюблену країну'
+    favoriteTooltip: 'Додати/видалити улюблену країну',
+    teamLabel: 'Команда',
+    playedLabel: 'І',
+    diffLabel: 'РМ',
+    pointsLabel: 'О'
   }
 };
 

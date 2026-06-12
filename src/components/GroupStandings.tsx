@@ -1,17 +1,11 @@
-import React from 'react';
 import { GroupStanding, Team } from '../types';
 import styles from './GroupStandings.module.css';
-import { TEAM_TRANSLATIONS, Language } from '../data/translations';
+import { TEAM_TRANSLATIONS, TRANSLATIONS, Language } from '../data/translations';
 
 interface GroupStandingsProps {
   standings: Record<string, GroupStanding[]>;
   teams: Team[];
-  lang?: string;
-  teamLabel?: string;
-  playedLabel?: string;
-  diffLabel?: string;
-  pointsLabel?: string;
-  groupLabel?: string;
+  lang?: Language;
   favorites?: string[];
   toggleFavorite?: (teamId: string) => void;
 }
@@ -20,18 +14,15 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({
   standings,
   teams,
   lang = 'de',
-  teamLabel = 'Team',
-  playedLabel = 'Sp',
-  diffLabel = 'TD',
-  pointsLabel = 'Pkt',
-  groupLabel = 'Gruppe',
   favorites = [],
   toggleFavorite
 }) => {
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.de;
+
   const getTeamInfo = (teamId: string) => {
     const team = teams.find((t) => t.id === teamId);
     if (team) {
-      const name = TEAM_TRANSLATIONS[team.id]?.[lang as Language] || team.name;
+      const name = TEAM_TRANSLATIONS[team.id]?.[lang] || team.name;
       return { id: team.id, name, flag: team.flag };
     }
     return { id: teamId, name: teamId, flag: '🏳️' };
@@ -50,16 +41,17 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({
     <div className={styles.grid}>
       {sortedGroups.map((groupName) => (
         <div key={groupName} className={`glass-panel ${styles.groupCard}`}>
-          <div className={styles.groupTitle}>{groupLabel} {groupName}</div>
+          <div className={styles.groupTitle}>{t.group} {groupName}</div>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>{teamLabel}</th>
-                <th>{playedLabel}</th>
-                <th>{diffLabel}</th>
-                <th>{pointsLabel}</th>
+                <th>{t.teamLabel}</th>
+                <th>{t.playedLabel}</th>
+                <th>{t.diffLabel}</th>
+                <th>{t.pointsLabel}</th>
               </tr>
             </thead>
+
             <tbody>
               {standings[groupName].map((row, idx) => {
                 const team = getTeamInfo(row.teamId);
