@@ -111,7 +111,7 @@
 /* Layout Grid */
 .layout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.5rem;
   align-items: start;
 }
@@ -227,6 +227,7 @@
   }
   .layout {
     width: 100%;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
   }
   .title {
@@ -260,6 +261,7 @@
     justify-content: center;
   }
   .matchesList {
+    width: 100%;
     max-height: none;
     overflow-y: visible;
     padding-right: 0;
