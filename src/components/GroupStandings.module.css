@@ -124,3 +124,25 @@
   font-weight: 700;
   color: var(--accent-gold);
 }
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .table {
+    font-size: 0.75rem;
+  }
+  .table th {
+    padding: 4px 3px;
+  }
+  .table td {
+    padding: 5px 3px;
+  }
+  .teamNameCell {
+    gap: 0.25rem;
+  }
+  .flag {
+    font-size: 0.95rem;
+  }
+}
