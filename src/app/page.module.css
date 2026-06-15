@@ -188,6 +188,7 @@
 
 .languageSelector {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
   justify-content: center;
@@ -220,6 +221,14 @@
 }
 
 @media (max-width: 768px) {
+  .main {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .layout {
+    width: 100%;
+    gap: 1.5rem;
+  }
   .title {
     font-size: 2rem;
   }

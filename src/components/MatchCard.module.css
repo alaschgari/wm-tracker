@@ -142,20 +142,34 @@
 
 @media (max-width: 480px) {
   .card {
-    padding: 1rem 0.85rem;
-    gap: 0.6rem;
+    width: 100%;
+    padding: 1rem 0.75rem;
+    gap: 0.5rem;
+  }
+  .teamRow {
+    width: 100%;
+    gap: 0.5rem;
   }
   .teamInfo {
     font-size: 0.85rem;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .teamInfo span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .flag {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
+    flex-shrink: 0;
   }
   .scoreDisplay {
-    min-width: 32px;
-    height: 32px;
-    font-size: 1rem;
+    min-width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+    flex-shrink: 0;
   }
   .venue {
     max-width: 50%;
