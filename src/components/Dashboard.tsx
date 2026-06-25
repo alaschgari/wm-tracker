@@ -512,53 +512,53 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
           {/* Sub-Tab 2: Tor-Events */}
           {activeStatsSubTab === 'GOALS' && (
-            <div className={styles.statsGridTwoCol}>
-              {/* Blitz-Tore */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+              {/* Elfmeter & Eigentore Box */}
               <div>
-                <h3 className={styles.sectionTitle} style={{ marginTop: 0 }}>⚡ {language === 'de' ? 'Schnellste Tore (Top 10)' : 'Fastest Goals (Top 10)'}</h3>
-                {stats.fastestGoals.length === 0 ? (
-                  <div className={styles.emptyState}>-</div>
-                ) : (
-                  <div className={styles.statsListCard}>
-                    {stats.fastestGoals.map((goal, idx) => {
-                      const team = currentTeams.find(t => t.id === goal.teamId);
-                      return (
-                        <div key={`${goal.scorer}-${goal.minute}-${idx}`} className={styles.statsItem}>
-                          <div className={styles.statsItemLeft}>
-                            <span className={styles.scorerRank}>{idx + 1}.</span>
-                            {team?.iconUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={team.iconUrl} alt="" className={styles.statsTeamLogo} />
-                            ) : (
-                              <span>{team?.flag || '🏳️'}</span>
-                            )}
-                            <span className={styles.scorerNameText} style={{ fontWeight: 600 }}>{goal.scorer}</span>
-                          </div>
-                          <span className={styles.statsItemRight}>{goal.minute}&apos;. Min</span>
-                        </div>
-                      );
-                    })}
+                <h3 className={styles.sectionTitle} style={{ marginTop: 0 }}>📊 {language === 'de' ? 'Turnier-Ereignisse' : 'Tournament Events'}</h3>
+                <div className={styles.statsListCard} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', padding: '1.25rem' }}>
+                  <div style={{ textAlign: 'center', background: 'rgba(10, 15, 26, 0.3)', padding: '0.85rem', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '1.75rem' }}>⚽</span>
+                    <h4 style={{ margin: '5px 0 2px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{language === 'de' ? 'Elfmeter' : 'Penalties'}</h4>
+                    <strong style={{ fontSize: '1.5rem', color: 'var(--accent-gold)' }}>{stats.penaltiesOwnGoals.totalPenalties}</strong>
                   </div>
-                )}
+                  <div style={{ textAlign: 'center', background: 'rgba(10, 15, 26, 0.3)', padding: '0.85rem', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '1.75rem' }}>⚠️</span>
+                    <h4 style={{ margin: '5px 0 2px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{language === 'de' ? 'Eigentore' : 'Own Goals'}</h4>
+                    <strong style={{ fontSize: '1.5rem', color: '#EF4444' }}>{stats.penaltiesOwnGoals.totalOwnGoals}</strong>
+                  </div>
+                </div>
               </div>
 
-              {/* Späte Tore & Elfmeter/Eigentore */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {/* Elfmeter & Eigentore Box */}
+              {/* Grid für schnellste und späte Tore nebeneinander */}
+              <div className={styles.statsGridTwoCol}>
+                {/* Blitz-Tore */}
                 <div>
-                  <h3 className={styles.sectionTitle} style={{ marginTop: 0 }}>📊 {language === 'de' ? 'Turnier-Ereignisse' : 'Tournament Events'}</h3>
-                  <div className={styles.statsListCard} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1.25rem' }}>
-                    <div style={{ textAlign: 'center', background: 'rgba(10, 15, 26, 0.3)', padding: '0.85rem', borderRadius: '8px' }}>
-                      <span style={{ fontSize: '1.75rem' }}>⚽</span>
-                      <h4 style={{ margin: '5px 0 2px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{language === 'de' ? 'Elfmeter' : 'Penalties'}</h4>
-                      <strong style={{ fontSize: '1.5rem', color: 'var(--accent-gold)' }}>{stats.penaltiesOwnGoals.totalPenalties}</strong>
+                  <h3 className={styles.sectionTitle} style={{ marginTop: 0 }}>⚡ {language === 'de' ? 'Schnellste Tore (Top 10)' : 'Fastest Goals (Top 10)'}</h3>
+                  {stats.fastestGoals.length === 0 ? (
+                    <div className={styles.emptyState}>-</div>
+                  ) : (
+                    <div className={styles.statsListCard}>
+                      {stats.fastestGoals.map((goal, idx) => {
+                        const team = currentTeams.find(t => t.id === goal.teamId);
+                        return (
+                          <div key={`${goal.scorer}-${goal.minute}-${idx}`} className={styles.statsItem}>
+                            <div className={styles.statsItemLeft}>
+                              <span className={styles.scorerRank}>{idx + 1}.</span>
+                              {team?.iconUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={team.iconUrl} alt="" className={styles.statsTeamLogo} />
+                              ) : (
+                                <span>{team?.flag || '🏳️'}</span>
+                              )}
+                              <span className={styles.scorerNameText} style={{ fontWeight: 600 }}>{goal.scorer}</span>
+                            </div>
+                            <span className={styles.statsItemRight}>{goal.minute}&apos;. Min</span>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div style={{ textAlign: 'center', background: 'rgba(10, 15, 26, 0.3)', padding: '0.85rem', borderRadius: '8px' }}>
-                      <span style={{ fontSize: '1.75rem' }}>⚠️</span>
-                      <h4 style={{ margin: '5px 0 2px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{language === 'de' ? 'Eigentore' : 'Own Goals'}</h4>
-                      <strong style={{ fontSize: '1.5rem', color: '#EF4444' }}>{stats.penaltiesOwnGoals.totalOwnGoals}</strong>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Späte Tore (Last Minute) */}
