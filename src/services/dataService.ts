@@ -423,6 +423,22 @@ const OFFICIAL_GROUPS: Record<string, string> = {
   ENG: 'L', GHA: 'L', PAN: 'L', HRV: 'L'
 };
 
+const normalizeTeamId = (id: string): string => {
+  const mapping: Record<string, string> = {
+    GER: 'DEU',
+    SUI: 'CHE',
+    KSA: 'SAU',
+    ALG: 'DZA',
+    SCO: 'SCT',
+    NED: 'NLD',
+    IRI: 'IRN',
+    URU: 'URY',
+    POR: 'PRT',
+    CRO: 'HRV',
+  };
+  return mapping[id] || id;
+};
+
 export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Team[] }> => {
   try {
     const res = await fetch('https://api.openligadb.de/getmatchdata/wm26/2026', {
@@ -438,7 +454,8 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
     apiMatches.forEach((m: OpenLigaMatch) => {
       const processTeam = (t: OpenLigaTeam | null) => {
         if (!t) return;
-        const id = t.shortName || t.teamName;
+        const rawId = t.shortName || t.teamName;
+        const id = normalizeTeamId(rawId);
         if (OFFICIAL_GROUPS[id] && !teamsMap[id]) {
           teamsMap[id] = {
             id,
@@ -455,9 +472,11 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
     const dynamicTeams = Object.values(teamsMap);
 
     const matches = apiMatches.map((m: OpenLigaMatch, index: number) => {
-      // Sicheres Parsen der Team-IDs/Namen
-      const homeTeam = m.team1 ? (m.team1.shortName || m.team1.teamName) : `TBD (Heim)`;
-      const awayTeam = m.team2 ? (m.team2.shortName || m.team2.teamName) : `TBD (Gast)`;
+      // Sicheres Parsen und Normalisieren der Team-IDs/Namen
+      const homeRaw = m.team1 ? (m.team1.shortName || m.team1.teamName) : `TBD (Heim)`;
+      const awayRaw = m.team2 ? (m.team2.shortName || m.team2.teamName) : `TBD (Gast)`;
+      const homeTeam = normalizeTeamId(homeRaw);
+      const awayTeam = normalizeTeamId(awayRaw);
 
       // Ermittle die Stage (präzise Zuordnung für verschiedene Sprachen und Kurzformen)
       const groupName = m.group?.groupName || '';
