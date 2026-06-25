@@ -1,4 +1,4 @@
-import { Team, Match, Stage } from '../types';
+import { Team, Match } from '../types';
 
 export const TEAMS: Team[] = [
   // Gruppe A

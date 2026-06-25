@@ -93,9 +93,9 @@ export const TimeMatrix: React.FC<TimeMatrixProps> = ({
   const sortedTimes = Array.from(uniqueTimesSet).sort((a, b) => {
     const [hA, mA] = a.split(/[:h]/).map(Number);
     const [hB, mB] = b.split(/[:h]/).map(Number);
-    // Sortiere späte/frühe Stunden für europäische Nachtschicht logisch
-    const adjustedA = hA < 10 ? hA + 24 : hA;
-    const adjustedB = hB < 10 ? hB + 24 : hB;
+    // Sortiere späte/frühe Stunden für europäische Nachtschicht logisch (inklusive Minuten)
+    const adjustedA = (hA < 10 ? hA + 24 : hA) * 60 + (mA || 0);
+    const adjustedB = (hB < 10 ? hB + 24 : hB) * 60 + (mB || 0);
     return adjustedA - adjustedB;
   });
 

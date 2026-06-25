@@ -6,6 +6,7 @@ export async function GET() {
     const data = await fetchLiveMatches();
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Error fetching live matches:', error);
     return NextResponse.json({ error: 'Failed to fetch live matches' }, { status: 500 });
   }
 }

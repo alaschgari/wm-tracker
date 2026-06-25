@@ -35,7 +35,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     if (typeof window !== 'undefined') {
       try {
         return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin';
-      } catch (e) {
+      } catch {
         return 'Europe/Berlin';
       }
     }
@@ -118,7 +118,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       if (savedTeams) {
         try {
           setCurrentTeams(JSON.parse(savedTeams));
-        } catch (e) {
+        } catch {
           setCurrentTeams(teams);
         }
       } else {
@@ -128,7 +128,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       if (saved) {
         try {
           setMatches(JSON.parse(saved));
-        } catch (e) {
+        } catch {
           setMatches(initialMatches);
         }
       } else {
@@ -177,6 +177,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         localStorage.setItem('wm_2026_teams', JSON.stringify(live.teams));
       }
     } catch (e) {
+      console.error('Error syncing live results:', e);
       alert(t.liveSyncError);
     } finally {
       setSyncing(false);
