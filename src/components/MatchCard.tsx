@@ -73,6 +73,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return !teamId || teamId.startsWith('W') || teamId.startsWith('RU') || teamId.includes(' ') || teamId.length > 3;
   };
 
+  const renderTeamFlag = (teamId: string, defaultFlag: string) => {
+    const team = teams.find((t) => t.id === teamId);
+    if (team?.iconUrl) {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img src={team.iconUrl} alt="" className={styles.teamIcon} />;
+    }
+    return <span className={styles.flag}>{defaultFlag}</span>;
+  };
+
   return (
     <div className={`glass-panel ${styles.card} ${isAnyFav ? styles.cardFavorite : ''}`}>
       <div className={styles.header}>
@@ -100,7 +109,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 {isHomeFav ? '★' : '☆'}
               </button>
             )}
-            <span className={styles.flag}>{homeTeamInfo.flag}</span>
+            {renderTeamFlag(match.homeTeam, homeTeamInfo.flag)}
             <span className={isHomeFav ? styles.favTeamName : ''}>{homeTeamInfo.name}</span>
           </div>
           <div className={styles.scoreDisplay}>
@@ -121,7 +130,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 {isAwayFav ? '★' : '☆'}
               </button>
             )}
-            <span className={styles.flag}>{awayTeamInfo.flag}</span>
+            {renderTeamFlag(match.awayTeam, awayTeamInfo.flag)}
             <span className={isAwayFav ? styles.favTeamName : ''}>{awayTeamInfo.name}</span>
           </div>
           <div className={styles.scoreDisplay}>
@@ -129,10 +138,35 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </div>
         </div>
 
+        {/* Halbzeitergebnis */}
+        {match.halfTimeScore && match.homeScore !== null && (
+          <div className={styles.halfTimeContainer}>
+            <span>{lang === 'en' ? 'HT' : lang === 'es' ? 'Desc.' : lang === 'fr' ? 'MT' : 'Halbzeit'} {match.halfTimeScore.home}:{match.halfTimeScore.away}</span>
+          </div>
+        )}
+
         {/* Elfmeterschießen (falls stattgefunden) */}
         {hasPenalties && (
           <div className={styles.penaltyContainer} style={{ fontSize: '0.8rem', color: 'var(--accent-gold)' }}>
             <span>i.E. {match.homePenaltyScore}:{match.awayPenaltyScore}</span>
+          </div>
+        )}
+
+        {/* Torschützenliste */}
+        {match.goals && match.goals.length > 0 && (
+          <div className={styles.goalsList}>
+            {match.goals.map((goal) => (
+              <div key={goal.id} className={styles.goalItem}>
+                <span className={styles.goalIcon}>⚽</span>
+                <span className={styles.goalMinute}>{goal.minute}&apos;</span>
+                <span className={styles.goalScorer} title={goal.scorer}>
+                  {goal.scorer}
+                  {goal.isPenalty && ` (${lang === 'en' ? 'Pen.' : 'Elfmeter'})`}
+                  {goal.isOwnGoal && ` (${lang === 'en' ? 'OG' : 'Eigentor'})`}
+                </span>
+                <span className={styles.goalScore}>({goal.scoreHome}:{goal.scoreAway})</span>
+              </div>
+            ))}
           </div>
         )}
       </div>

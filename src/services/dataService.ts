@@ -20,6 +20,17 @@ interface OpenLigaLocation {
   city?: string;
 }
 
+interface OpenLigaGoal {
+  goalID: number;
+  scoreTeam1: number;
+  scoreTeam2: number;
+  matchMinute: number;
+  goalGetterName: string;
+  isPenalty: boolean;
+  isOwnGoal: boolean;
+  isOvertime: boolean;
+}
+
 interface OpenLigaMatch {
   matchID: number;
   matchDateTime: string;
@@ -31,6 +42,7 @@ interface OpenLigaMatch {
   team1: OpenLigaTeam | null;
   team2: OpenLigaTeam | null;
   matchResults?: OpenLigaResult[];
+  goals?: OpenLigaGoal[];
   matchIsFinished: boolean;
   location?: OpenLigaLocation;
 }
@@ -461,7 +473,8 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
             id,
             name: t.teamName,
             flag: EMOJI_MAP[id] || '🏳️',
-            group: OFFICIAL_GROUPS[id]
+            group: OFFICIAL_GROUPS[id],
+            iconUrl: t.teamIconUrl || undefined
           };
         }
       };
@@ -556,6 +569,27 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
         }
       }
 
+      let halfTimeScore: { home: number; away: number } | null = null;
+      if (m.matchResults && m.matchResults.length > 0) {
+        const htResult = m.matchResults.find((r: OpenLigaResult) => r.resultName === 'Halbzeitergebnis');
+        if (htResult) {
+          halfTimeScore = {
+            home: htResult.pointsTeam1,
+            away: htResult.pointsTeam2
+          };
+        }
+      }
+
+      const goals = m.goals?.map((g: OpenLigaGoal) => ({
+        id: g.goalID,
+        scoreHome: g.scoreTeam1,
+        scoreAway: g.scoreTeam2,
+        minute: g.matchMinute,
+        scorer: g.goalGetterName || 'Unbekannt',
+        isPenalty: g.isPenalty,
+        isOwnGoal: g.isOwnGoal
+      })) || [];
+
       const fallbackStadias = [
         { stadium: 'Azteca', city: 'Mexiko-Stadt' },
         { stadium: 'MetLife Stadium', city: 'New York/New Jersey' },
@@ -580,6 +614,8 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
         awayScore,
         homePenaltyScore,
         awayPenaltyScore,
+        halfTimeScore,
+        goals,
         date: m.matchDateTimeUTC || m.matchDateTime,
         stage,
         group,

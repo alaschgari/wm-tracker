@@ -183,3 +183,62 @@
     max-width: 50%;
   }
 }
+
+.teamIcon {
+  width: 24px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.halfTimeContainer {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: -0.25rem;
+  font-style: italic;
+}
+
+.goalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  animation: fadeIn 0.3s ease;
+}
+
+.goalItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.goalIcon {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.goalMinute {
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 24px;
+}
+
+.goalScorer {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goalScore {
+  font-weight: 600;
+  color: var(--text-primary);
+}

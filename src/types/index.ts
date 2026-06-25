@@ -12,6 +12,17 @@ export interface Team {
   name: string;
   flag: string; // Emoji flag or code
   group: string; // e.g., "A"
+  iconUrl?: string;
+}
+
+export interface Goal {
+  id: number;
+  scoreHome: number;
+  scoreAway: number;
+  minute: number;
+  scorer: string;
+  isPenalty: boolean;
+  isOwnGoal: boolean;
 }
 
 export interface Match {
@@ -22,6 +33,8 @@ export interface Match {
   awayScore: number | null;
   homePenaltyScore?: number | null;
   awayPenaltyScore?: number | null;
+  halfTimeScore?: { home: number; away: number } | null;
+  goals?: Goal[];
   date: string; // ISO String or Date
   stage: Stage;
   group?: string; // Group name if stage is 'GROUP'
