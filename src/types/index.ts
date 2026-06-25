@@ -23,6 +23,7 @@ export interface Goal {
   scorer: string;
   isPenalty: boolean;
   isOwnGoal: boolean;
+  isHome: boolean;
 }
 
 export interface Match {

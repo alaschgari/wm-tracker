@@ -580,15 +580,22 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
         }
       }
 
-      const goals = m.goals?.map((g: OpenLigaGoal) => ({
-        id: g.goalID,
-        scoreHome: g.scoreTeam1,
-        scoreAway: g.scoreTeam2,
-        minute: g.matchMinute,
-        scorer: g.goalGetterName || 'Unbekannt',
-        isPenalty: g.isPenalty,
-        isOwnGoal: g.isOwnGoal
-      })) || [];
+      const apiGoals = m.goals ? [...m.goals].sort((a, b) => a.matchMinute - b.matchMinute) : [];
+      let prevHomeScore = 0;
+      const goals = apiGoals.map((g: OpenLigaGoal) => {
+        const isHome = g.scoreTeam1 > prevHomeScore;
+        prevHomeScore = g.scoreTeam1;
+        return {
+          id: g.goalID,
+          scoreHome: g.scoreTeam1,
+          scoreAway: g.scoreTeam2,
+          minute: g.matchMinute,
+          scorer: g.goalGetterName || 'Unbekannt',
+          isPenalty: g.isPenalty,
+          isOwnGoal: g.isOwnGoal,
+          isHome
+        };
+      });
 
       const fallbackStadias = [
         { stadium: 'Azteca', city: 'Mexiko-Stadt' },

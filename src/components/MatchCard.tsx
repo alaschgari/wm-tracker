@@ -160,19 +160,40 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </div>
       </div>
 
-      {/* Torschützenliste */}
+      {/* Torschützen-Timeline */}
       {match.goals && match.goals.length > 0 && (
-        <div className={styles.goalsList}>
+        <div className={styles.timeline}>
+          <div className={styles.timelineLine}></div>
           {match.goals.map((goal) => (
-            <div key={goal.id} className={styles.goalItem}>
-              <span className={styles.goalIcon}>⚽</span>
-              <span className={styles.goalMinute}>{goal.minute}&apos;</span>
-              <span className={styles.goalScorer} title={goal.scorer}>
-                {goal.scorer}
-                {goal.isPenalty && ` (${lang === 'en' ? 'Pen.' : 'Elfmeter'})`}
-                {goal.isOwnGoal && ` (${lang === 'en' ? 'OG' : 'Eigentor'})`}
-              </span>
-              <span className={styles.goalScore}>({goal.scoreHome}:{goal.scoreAway})</span>
+            <div key={goal.id} className={styles.timelineItem}>
+              {/* Linke Seite (Heim-Tor) */}
+              <div className={styles.timelineContentLeft}>
+                {goal.isHome && (
+                  <div className={styles.goalDetailsLeft}>
+                    <span className={styles.scorerName} title={goal.scorer}>{goal.scorer}</span>
+                    {goal.isPenalty && <span className={styles.goalMetaBadge}>Elfm.</span>}
+                    {goal.isOwnGoal && <span className={styles.goalMetaBadge}>ET</span>}
+                    <span className={styles.goalScore}>({goal.scoreHome}:{goal.scoreAway})</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Mitte (Spielminute) */}
+              <div className={styles.timelineBadge}>
+                <span className={styles.timelineMinute}>{goal.minute}&apos;</span>
+              </div>
+
+              {/* Rechte Seite (Auswärts-Tor) */}
+              <div className={styles.timelineContentRight}>
+                {!goal.isHome && (
+                  <div className={styles.goalDetailsRight}>
+                    <span className={styles.goalScore}>({goal.scoreHome}:{goal.scoreAway})</span>
+                    <span className={styles.scorerName} title={goal.scorer}>{goal.scorer}</span>
+                    {goal.isPenalty && <span className={styles.goalMetaBadge}>Elfm.</span>}
+                    {goal.isOwnGoal && <span className={styles.goalMetaBadge}>ET</span>}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>

@@ -314,3 +314,103 @@
   opacity: 0.5;
   font-weight: 500;
 }
+
+.timeline {
+  position: relative;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.timelineLine {
+  position: absolute;
+  left: 50%;
+  top: 1rem;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(-50%);
+}
+
+.timelineItem {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.timelineContentLeft {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 0.75rem;
+  min-width: 0;
+}
+
+.timelineContentRight {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 0.75rem;
+  min-width: 0;
+}
+
+.timelineBadge {
+  width: 32px;
+  height: 20px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.timelineMinute {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.goalDetailsLeft {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  text-align: right;
+  min-width: 0;
+  width: 100%;
+}
+
+.goalDetailsRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  text-align: left;
+  min-width: 0;
+  width: 100%;
+}
+
+.scorerName {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goalMetaBadge {
+  font-size: 0.6rem;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--accent-gold);
+  font-weight: 600;
+}
