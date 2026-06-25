@@ -186,16 +186,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           const groupName = `gruppe ${m.group}`.toLowerCase();
           const groupNameEn = `group ${m.group}`.toLowerCase();
 
-          const fuzzyMatch = (text: string, q: string): boolean => {
-            if (text.includes(q)) return true;
-            let qIdx = 0;
-            for (let i = 0; i < text.length; i++) {
-              if (text[i] === q[qIdx]) {
-                qIdx++;
+          const getLevenshteinDistance = (a: string, b: string): number => {
+            const tmp: number[][] = [];
+            for (let i = 0; i <= a.length; i++) tmp[i] = [i];
+            for (let j = 0; j <= b.length; j++) tmp[0][j] = j;
+            for (let i = 1; i <= a.length; i++) {
+              for (let j = 1; j <= b.length; j++) {
+                tmp[i][j] = Math.min(
+                  tmp[i - 1][j] + 1,
+                  tmp[i][j - 1] + 1,
+                  tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+                );
               }
-              if (qIdx === q.length) return true;
             }
-            return false;
+            return tmp[a.length][b.length];
+          };
+
+          const fuzzyMatch = (text: string, q: string): boolean => {
+            const cleanText = text.toLowerCase().trim();
+            const cleanQuery = q.toLowerCase().trim();
+            if (cleanText.includes(cleanQuery)) return true;
+            if (cleanQuery.length < 3) return false;
+
+            const words = cleanText.split(/[\s-]+/);
+            return words.some(word => {
+              if (word.startsWith(cleanQuery.slice(0, -1))) return true;
+              return getLevenshteinDistance(word, cleanQuery) <= 1;
+            });
           };
 
           return (
