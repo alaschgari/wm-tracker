@@ -1,0 +1,22 @@
+{
+  "name": "FIFA World Cup 2026 Tracker",
+  "short_name": "WM 2026 Tracker",
+  "description": "Ergebnis-Tracker & interaktiver Turniersimulator für die FIFA Weltmeisterschaft 2026.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

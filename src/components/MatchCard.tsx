@@ -13,6 +13,7 @@ interface MatchCardProps {
   timezone?: string;
   favorites?: string[];
   toggleFavorite?: (teamId: string) => void;
+  onTeamClick?: (teamId: string) => void;
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({
@@ -21,7 +22,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   lang = 'de',
   timezone = 'Europe/Berlin',
   favorites = [],
-  toggleFavorite
+  toggleFavorite,
+  onTeamClick
 }) => {
   const getTeamInfo = (teamId: string): { name: string; flag: string } => {
     const team = teams.find((t) => t.id === teamId);
@@ -91,18 +93,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             : match.stage.replace(/_/g, ' ')}
         </span>
         <span className={styles.venue} title={`${match.stadium}, ${match.city}`}>
-          {match.city}
+          📍 {match.stadium ? `${match.stadium}, ${match.city}` : match.city}
         </span>
       </div>
 
       <div className={styles.teamsContainerHorizontal}>
         {/* Heimteam (links) */}
-        <div className={`${styles.teamColumn} ${isHomeFav ? styles.rowFavorite : ''}`}>
+        <div 
+          className={`${styles.teamColumn} ${isHomeFav ? styles.rowFavorite : ''} ${!isPlaceholder(match.homeTeam) && onTeamClick ? styles.clickableTeam : ''}`}
+          onClick={() => !isPlaceholder(match.homeTeam) && onTeamClick && onTeamClick(match.homeTeam)}
+        >
           <div className={styles.teamHeader}>
             {!isPlaceholder(match.homeTeam) && toggleFavorite && (
               <button
                 type="button"
-                onClick={() => toggleFavorite(match.homeTeam)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(match.homeTeam);
+                }}
                 className={`${styles.starBtn} ${isHomeFav ? styles.starActive : ''}`}
                 title={favTooltip}
               >
@@ -142,13 +150,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </div>
 
         {/* Auswärtsteam (rechts) */}
-        <div className={`${styles.teamColumn} ${isAwayFav ? styles.rowFavorite : ''}`}>
+        <div 
+          className={`${styles.teamColumn} ${isAwayFav ? styles.rowFavorite : ''} ${!isPlaceholder(match.awayTeam) && onTeamClick ? styles.clickableTeam : ''}`}
+          onClick={() => !isPlaceholder(match.awayTeam) && onTeamClick && onTeamClick(match.awayTeam)}
+        >
           <div className={styles.teamHeader}>
             {renderTeamFlag(match.awayTeam, awayTeamInfo.flag)}
             {!isPlaceholder(match.awayTeam) && toggleFavorite && (
               <button
                 type="button"
-                onClick={() => toggleFavorite(match.awayTeam)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(match.awayTeam);
+                }}
                 className={`${styles.starBtn} ${isAwayFav ? styles.starActive : ''}`}
                 title={favTooltip}
               >

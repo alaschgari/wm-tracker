@@ -8,6 +8,7 @@ interface GroupStandingsProps {
   lang?: Language;
   favorites?: string[];
   toggleFavorite?: (teamId: string) => void;
+  onTeamClick?: (teamId: string) => void;
 }
 
 export const GroupStandings: React.FC<GroupStandingsProps> = ({
@@ -15,7 +16,8 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({
   teams,
   lang = 'de',
   favorites = [],
-  toggleFavorite
+  toggleFavorite,
+  onTeamClick
 }) => {
   const t = TRANSLATIONS[lang] || TRANSLATIONS.de;
 
@@ -62,12 +64,18 @@ export const GroupStandings: React.FC<GroupStandingsProps> = ({
                 return (
                   <tr key={row.teamId} className={`${styles.teamRow} ${qualifyClass} ${isFavorite ? styles.rowFavorite : ''}`}>
                     <td>
-                      <div className={styles.teamNameCell}>
+                      <div 
+                        className={`${styles.teamNameCell} ${onTeamClick ? styles.clickableTeam : ''}`}
+                        onClick={() => onTeamClick && onTeamClick(row.teamId)}
+                      >
                         <span className={styles.rank}>{idx + 1}</span>
                         {toggleFavorite && (
                           <button
                             type="button"
-                            onClick={() => toggleFavorite(row.teamId)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(row.teamId);
+                            }}
                             className={`${styles.starBtn} ${isFavorite ? styles.starActive : ''}`}
                             title={lang === 'en' ? 'Toggle favorite country' : lang === 'es' ? 'Marcar/desmarcar país favorito' : lang === 'fr' ? 'Ajouter/retirer favori' : lang === 'ru' ? 'Добавить/удалить любимую страну' : lang === 'uk' ? 'Додати/видалити улюблену країну' : 'Lieblingsland markieren/entfernen'}
                           >

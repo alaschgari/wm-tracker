@@ -75,6 +75,16 @@
   font-weight: 500;
 }
 
+.clickableTeam {
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.clickableTeam:hover {
+  text-decoration: underline;
+  color: var(--accent-blue);
+}
+
 .flag {
   font-size: 1.1rem;
 }

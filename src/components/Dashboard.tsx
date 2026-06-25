@@ -5,6 +5,8 @@ import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
 import { TimeMatrix } from './TimeMatrix';
+import { TeamDetailsModal } from './TeamDetailsModal';
+import { KnockoutBracket } from './KnockoutBracket';
 import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi, calculateTopScorers, calculateTeamStats, calculateAllStats } from '../services/dataService';
 import { TRANSLATIONS, Language } from '../data/translations';
 import styles from '../app/page.module.css';
@@ -21,6 +23,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [selectedKnockoutStage, setSelectedKnockoutStage] = useState<Stage | 'ALL'>('ALL');
   const [groupSearchQuery, setGroupSearchQuery] = useState<string>('');
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [language, setLanguage] = useState<Language>(() => {
@@ -136,6 +139,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       } else {
         setMatches(initialMatches);
       }
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          console.log('SW registered successfully:', reg.scope);
+        }).catch((err) => {
+          console.log('SW registration failed:', err);
+        });
+      }
       setMounted(true);
     };
 
@@ -164,7 +174,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         const matchesGroup = selectedGroup === 'ALL' || m.group === selectedGroup;
         if (!matchesGroup) return false;
 
-        // Dann Suchbegriff-Filter (intelligente Suche)
+        // Dann Suchbegriff-Filter (intelligente Fuzzy-Suche)
         if (groupSearchQuery.trim() !== '') {
           const query = groupSearchQuery.toLowerCase().trim();
           const homeTeamObj = currentTeams.find(t => t.id === m.homeTeam);
@@ -176,13 +186,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           const groupName = `gruppe ${m.group}`.toLowerCase();
           const groupNameEn = `group ${m.group}`.toLowerCase();
 
+          const fuzzyMatch = (text: string, q: string): boolean => {
+            if (text.includes(q)) return true;
+            let qIdx = 0;
+            for (let i = 0; i < text.length; i++) {
+              if (text[i] === q[qIdx]) {
+                qIdx++;
+              }
+              if (qIdx === q.length) return true;
+            }
+            return false;
+          };
+
           return (
-            homeName.includes(query) ||
-            awayName.includes(query) ||
-            homeId.includes(query) ||
-            awayId.includes(query) ||
-            groupName.includes(query) ||
-            groupNameEn.includes(query)
+            fuzzyMatch(homeName, query) ||
+            fuzzyMatch(awayName, query) ||
+            fuzzyMatch(homeId, query) ||
+            fuzzyMatch(awayId, query) ||
+            fuzzyMatch(groupName, query) ||
+            fuzzyMatch(groupNameEn, query)
           );
         }
 
@@ -372,6 +394,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                     timezone={timezone}
                     favorites={favorites}
                     toggleFavorite={toggleFavorite}
+                    onTeamClick={setSelectedTeam}
                   />
                 ))
               )}
@@ -387,6 +410,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
               lang={language}
               favorites={favorites}
               toggleFavorite={toggleFavorite}
+              onTeamClick={setSelectedTeam}
             />
           </div>
         </div>
@@ -394,7 +418,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
       {activeTab === 'KNOCKOUT' && (
         <div className={styles.layout}>
-          <div>
+          <div style={{ width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>{t.matchTree}</h2>
               <select
@@ -410,23 +434,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
               </select>
             </div>
 
-            <div className={styles.matchesList} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', maxHeight: 'none' }}>
-              {filteredMatches.length === 0 ? (
-                <div className={styles.emptyState}>-</div>
-              ) : (
-                filteredMatches.map((match) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    teams={currentTeams}
-                    lang={language}
-                    timezone={timezone}
-                    favorites={favorites}
-                    toggleFavorite={toggleFavorite}
-                  />
-                ))
-              )}
-            </div>
+            {selectedKnockoutStage === 'ALL' ? (
+              <KnockoutBracket
+                matches={matches}
+                teams={currentTeams}
+                lang={language}
+                onTeamClick={setSelectedTeam}
+              />
+            ) : (
+              <div className={styles.matchesList} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', maxHeight: 'none' }}>
+                {filteredMatches.length === 0 ? (
+                  <div className={styles.emptyState}>-</div>
+                ) : (
+                  filteredMatches.map((match) => (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      teams={currentTeams}
+                      lang={language}
+                      timezone={timezone}
+                      favorites={favorites}
+                      toggleFavorite={toggleFavorite}
+                      onTeamClick={setSelectedTeam}
+                    />
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -787,6 +821,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           )}
 
         </div>
+      )}
+      {selectedTeam && (
+        <TeamDetailsModal
+          teamId={selectedTeam}
+          isOpen={selectedTeam !== null}
+          onClose={() => setSelectedTeam(null)}
+          matches={matches}
+          teams={currentTeams}
+          lang={language}
+        />
       )}
     </div>
   );

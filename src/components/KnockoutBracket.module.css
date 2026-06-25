@@ -1,0 +1,151 @@
+.bracketContainer {
+  width: 100%;
+  overflow-x: auto;
+  padding: 1.5rem 0.5rem;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.bracketScrollArea {
+  display: flex;
+  gap: 2.5rem;
+  min-width: 1200px;
+  justify-content: space-between;
+}
+
+.bracketColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.columnHeader {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+.matchesContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+  flex-grow: 1;
+  gap: 1rem;
+}
+
+/* Spezifische Höhen & Verteilungen für den Baum-Look */
+.ROUND_OF_32 {
+  gap: 1rem;
+}
+
+.ROUND_OF_16 {
+  gap: 3rem;
+}
+
+.QUARTER_FINALS {
+  gap: 7rem;
+}
+
+.SEMI_FINALS {
+  gap: 15rem;
+}
+
+.FINAL {
+  gap: 25rem;
+}
+
+.matchCard {
+  background: rgba(13, 20, 35, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.matchCard:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(13, 20, 35, 0.85);
+}
+
+.matchIdTag {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.teamRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.flag {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.teamName {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.winner .teamName {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.score {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  margin-left: 0.25rem;
+}
+
+.winner .score {
+  color: var(--accent-gold);
+}
+
+.winner {
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.emptyStage {
+  text-align: center;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-size: 0.9rem;
+  padding: 2rem;
+  border: 1px dashed rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+}
