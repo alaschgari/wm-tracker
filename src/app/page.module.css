@@ -321,41 +321,102 @@
   max-width: 200px;
 }
 
-.scorerTeamIcon {
-  width: 20px;
-  height: 14px;
+.teamScorerList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.teamScorerCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: var(--transition-smooth);
+}
+
+.teamScorerCard:hover {
+  border-color: rgba(212, 175, 55, 0.25);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.teamScorerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.teamScorerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.teamScorerRank {
+  font-weight: 800;
+  color: var(--accent-gold);
+  font-size: 1.1rem;
+}
+
+.teamScorerLogo {
+  width: 28px;
+  height: 18px;
   object-fit: contain;
-  border-radius: 1px;
+  border-radius: 2px;
+}
+
+.teamScorerName {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.teamGoalsBadge {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.playerScorersList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.playerScorerItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.playerScorerBullet {
+  color: var(--accent-gold);
+}
+
+.playerScorerName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.playerScorerGoals {
+  opacity: 0.7;
 }
 
 .scorerTeamFlag {
   font-size: 1.2rem;
   line-height: 1;
-}
-
-.scorerTeamName {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.scorerNameText {
-  flex: 1;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text-primary);
-}
-
-.scorerGoalsBadge {
-  background: rgba(212, 175, 55, 0.15);
-  color: var(--accent-gold);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-weight: 700;
-  font-size: 0.8rem;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
 }
 

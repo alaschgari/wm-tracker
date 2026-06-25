@@ -688,4 +688,49 @@ export const calculateTopScorers = (matches: Match[]): TopScorer[] => {
     .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
 };
 
+export interface TeamScorerStats {
+  teamId: string;
+  totalGoals: number;
+  scorers: { name: string; goals: number }[];
+}
+
+export const calculateTeamStats = (matches: Match[]): TeamScorerStats[] => {
+  const teamMap: Record<string, { totalGoals: number; scorers: Record<string, number> }> = {};
+
+  matches.forEach((match) => {
+    if (!match.goals) return;
+
+    match.goals.forEach((goal) => {
+      if (goal.isOwnGoal) return;
+
+      const scorerName = goal.scorer.trim();
+      if (!scorerName || scorerName === 'Unbekannt') return;
+
+      const teamId = goal.isHome ? match.homeTeam : match.awayTeam;
+
+      if (!teamMap[teamId]) {
+        teamMap[teamId] = { totalGoals: 0, scorers: {} };
+      }
+
+      teamMap[teamId].totalGoals += 1;
+      teamMap[teamId].scorers[scorerName] = (teamMap[teamId].scorers[scorerName] || 0) + 1;
+    });
+  });
+
+  return Object.entries(teamMap)
+    .map(([teamId, data]) => {
+      const sortedScorers = Object.entries(data.scorers)
+        .map(([name, goals]) => ({ name, goals }))
+        .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name))
+        .slice(0, 5);
+
+      return {
+        teamId,
+        totalGoals: data.totalGoals,
+        scorers: sortedScorers
+      };
+    })
+    .sort((a, b) => b.totalGoals - a.totalGoals || a.teamId.localeCompare(b.teamId));
+};
+
 

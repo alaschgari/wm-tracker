@@ -5,7 +5,7 @@ import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
 import { TimeMatrix } from './TimeMatrix';
-import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi, calculateTopScorers } from '../services/dataService';
+import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi, calculateTeamStats } from '../services/dataService';
 import { TRANSLATIONS, Language } from '../data/translations';
 import styles from '../app/page.module.css';
 
@@ -143,8 +143,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   // Berechne aktuelle Tabellen
   const standings = React.useMemo(() => calculateStandings(matches, currentTeams), [matches, currentTeams]);
 
-  // Berechne Topscorer
-  const topScorers = React.useMemo(() => calculateTopScorers(matches), [matches]);
+  // Berechne Teamscorer-Statistiken
+  const teamScorerStats = React.useMemo(() => calculateTeamStats(matches), [matches]);
 
   // Filtere Matches nach Gruppenphase vs K.o.-Phase
   const filteredMatches = React.useMemo(() => {
@@ -374,28 +374,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
         <div className={styles.layout}>
           <div className={styles.scorersContainer}>
             <h2 className={styles.sectionTitle}>{t.topScorers}</h2>
-            {topScorers.length === 0 ? (
+            {teamScorerStats.length === 0 ? (
               <div className={styles.emptyState}>-</div>
             ) : (
-              <div className={styles.scorersList}>
-                {topScorers.map((scorer, index) => {
-                  const team = currentTeams.find(t => t.id === scorer.teamId);
+              <div className={styles.teamScorerList}>
+                {teamScorerStats.map((teamStats, index) => {
+                  const team = currentTeams.find(t => t.id === teamStats.teamId);
                   return (
-                    <div key={scorer.name} className={styles.scorerItem}>
-                      <span className={styles.scorerRank}>{index + 1}.</span>
-                      <div className={styles.scorerTeamInfo}>
-                        {team?.iconUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={team.iconUrl} alt="" className={styles.scorerTeamIcon} />
-                        ) : (
-                          <span className={styles.scorerTeamFlag}>{team?.flag || '🏳️'}</span>
-                        )}
-                        <span className={styles.scorerTeamName}>{team?.name || scorer.teamId}</span>
+                    <div key={teamStats.teamId} className={styles.teamScorerCard}>
+                      <div className={styles.teamScorerHeader}>
+                        <div className={styles.teamScorerInfo}>
+                          <span className={styles.teamScorerRank}>{index + 1}.</span>
+                          {team?.iconUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={team.iconUrl} alt="" className={styles.teamScorerLogo} />
+                          ) : (
+                            <span className={styles.scorerTeamFlag}>{team?.flag || '🏳️'}</span>
+                          )}
+                          <span className={styles.teamScorerName}>{team?.name || teamStats.teamId}</span>
+                        </div>
+                        <span className={styles.teamGoalsBadge}>
+                          {teamStats.totalGoals} {teamStats.totalGoals === 1 ? (language === 'de' ? 'Tor' : 'Goal') : (language === 'de' ? 'Tore' : 'Goals')}
+                        </span>
                       </div>
-                      <span className={styles.scorerNameText}>{scorer.name}</span>
-                      <span className={styles.scorerGoalsBadge}>
-                        {scorer.goals} {scorer.goals === 1 ? (language === 'de' ? 'Tor' : 'Goal') : (language === 'de' ? 'Tore' : 'Goals')}
-                      </span>
+                      
+                      <div className={styles.playerScorersList}>
+                        {teamStats.scorers.map((player) => (
+                          <div key={player.name} className={styles.playerScorerItem}>
+                            <span className={styles.playerScorerBullet}>•</span>
+                            <span className={styles.playerScorerName}>{player.name}</span>
+                            <span className={styles.playerScorerGoals}>({player.goals})</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   );
                 })}
