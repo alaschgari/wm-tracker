@@ -652,4 +652,40 @@ export const fetchLiveMatchesFromApi = async (): Promise<{ matches: Match[]; tea
   return res.json();
 };
 
+export interface TopScorer {
+  name: string;
+  teamId: string;
+  goals: number;
+}
+
+export const calculateTopScorers = (matches: Match[]): TopScorer[] => {
+  const scorerMap: Record<string, { goals: number; teamId: string }> = {};
+
+  matches.forEach((match) => {
+    if (!match.goals) return;
+
+    match.goals.forEach((goal) => {
+      if (goal.isOwnGoal) return;
+
+      const scorerName = goal.scorer.trim();
+      if (!scorerName || scorerName === 'Unbekannt') return;
+
+      const teamId = goal.isHome ? match.homeTeam : match.awayTeam;
+
+      if (!scorerMap[scorerName]) {
+        scorerMap[scorerName] = { goals: 0, teamId };
+      }
+      scorerMap[scorerName].goals += 1;
+    });
+  });
+
+  return Object.entries(scorerMap)
+    .map(([name, data]) => ({
+      name,
+      teamId: data.teamId,
+      goals: data.goals
+    }))
+    .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
+};
+
 

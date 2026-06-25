@@ -29,6 +29,7 @@ export interface TranslationDictionary {
   loading: string;
   penalty: string;
   timeMatrix: string;
+  topScorers: string;
   selectTimezone: string;
   favoriteTooltip: string;
   teamLabel: string;
@@ -68,6 +69,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Lade...',
     penalty: 'Elfmeter',
     timeMatrix: 'Zeit-Matrix',
+    topScorers: 'Torschützen',
     selectTimezone: 'Zeitzone wählen',
     favoriteTooltip: 'Lieblingsland markieren/entfernen',
     teamLabel: 'Team',
@@ -105,6 +107,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Loading...',
     penalty: 'Penalties',
     timeMatrix: 'Time Matrix',
+    topScorers: 'Top Scorers',
     selectTimezone: 'Select Timezone',
     favoriteTooltip: 'Toggle favorite country',
     teamLabel: 'Team',
@@ -142,6 +145,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Cargando...',
     penalty: 'Penaltis',
     timeMatrix: 'Matriz de tiempo',
+    topScorers: 'Goleadores',
     selectTimezone: 'Seleccionar zona horaria',
     favoriteTooltip: 'Marcar/desmarcar país favorito',
     teamLabel: 'Equipo',
@@ -179,6 +183,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Chargement...',
     penalty: 'Tirs au but',
     timeMatrix: 'Matrice de temps',
+    topScorers: 'Buteurs',
     selectTimezone: 'Sélectionner le fuseau horaire',
     favoriteTooltip: 'Ajouter/retirer des pays favoris',
     teamLabel: 'Équipe',
@@ -216,6 +221,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Загрузка...',
     penalty: 'Пенальти',
     timeMatrix: 'Матрица времени',
+    topScorers: 'Бомбардиры',
     selectTimezone: 'Выберите часовой пояс',
     favoriteTooltip: 'Добавить/удалить любимую страну',
     teamLabel: 'Команда',
@@ -253,6 +259,7 @@ export const TRANSLATIONS: Record<Language, TranslationDictionary> = {
     loading: 'Завантаження...',
     penalty: 'Пенальті',
     timeMatrix: 'Матриця часу',
+    topScorers: 'Бомбардири',
     selectTimezone: 'Виберіть часовий пояс',
     favoriteTooltip: 'Додати/видалити улюблену країну',
     teamLabel: 'Команда',

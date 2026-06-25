@@ -5,7 +5,7 @@ import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
 import { TimeMatrix } from './TimeMatrix';
-import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi } from '../services/dataService';
+import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi, calculateTopScorers } from '../services/dataService';
 import { TRANSLATIONS, Language } from '../data/translations';
 import styles from '../app/page.module.css';
 
@@ -16,7 +16,7 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) => {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [activeTab, setActiveTab] = useState<'GROUP' | 'KNOCKOUT' | 'MATRIX'>('GROUP');
+  const [activeTab, setActiveTab] = useState<'GROUP' | 'KNOCKOUT' | 'MATRIX' | 'SCORERS'>('GROUP');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [selectedKnockoutStage, setSelectedKnockoutStage] = useState<Stage | 'ALL'>('ALL');
   const [mounted, setMounted] = useState(false);
@@ -143,6 +143,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   // Berechne aktuelle Tabellen
   const standings = React.useMemo(() => calculateStandings(matches, currentTeams), [matches, currentTeams]);
 
+  // Berechne Topscorer
+  const topScorers = React.useMemo(() => calculateTopScorers(matches), [matches]);
+
   // Filtere Matches nach Gruppenphase vs K.o.-Phase
   const filteredMatches = React.useMemo(() => {
     return matches.filter((m) => {
@@ -259,6 +262,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           >
             {t.timeMatrix}
           </button>
+          <button
+            onClick={() => setActiveTab('SCORERS')}
+            className={`${styles.tabButton} ${activeTab === 'SCORERS' ? styles.tabButtonActive : ''}`}
+          >
+            {t.topScorers}
+          </button>
         </div>
 
         <div className={styles.buttonGroup}>
@@ -359,6 +368,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
       {activeTab === 'MATRIX' && (
         <TimeMatrix matches={matches} teams={currentTeams} lang={language} timezone={timezone} favorites={favorites} />
+      )}
+
+      {activeTab === 'SCORERS' && (
+        <div className={styles.layout}>
+          <div className={styles.scorersContainer}>
+            <h2 className={styles.sectionTitle}>{t.topScorers}</h2>
+            {topScorers.length === 0 ? (
+              <div className={styles.emptyState}>-</div>
+            ) : (
+              <div className={styles.scorersList}>
+                {topScorers.map((scorer, index) => {
+                  const team = currentTeams.find(t => t.id === scorer.teamId);
+                  return (
+                    <div key={scorer.name} className={styles.scorerItem}>
+                      <span className={styles.scorerRank}>{index + 1}.</span>
+                      <div className={styles.scorerTeamInfo}>
+                        {team?.iconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={team.iconUrl} alt="" className={styles.scorerTeamIcon} />
+                        ) : (
+                          <span className={styles.scorerTeamFlag}>{team?.flag || '🏳️'}</span>
+                        )}
+                        <span className={styles.scorerTeamName}>{team?.name || scorer.teamId}</span>
+                      </div>
+                      <span className={styles.scorerNameText}>{scorer.name}</span>
+                      <span className={styles.scorerGoalsBadge}>
+                        {scorer.goals} {scorer.goals === 1 ? (language === 'de' ? 'Tor' : 'Goal') : (language === 'de' ? 'Tore' : 'Goals')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

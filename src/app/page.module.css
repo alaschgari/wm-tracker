@@ -272,3 +272,90 @@
   }
 }
 
+.scorersContainer {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease;
+}
+
+.scorersList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+.scorerItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 15, 26, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-md);
+  transition: var(--transition-smooth);
+}
+
+.scorerItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(212, 175, 55, 0.2);
+}
+
+.scorerRank {
+  font-weight: 700;
+  color: var(--accent-gold);
+  min-width: 24px;
+  font-size: 0.9rem;
+}
+
+.scorerTeamInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.scorerTeamIcon {
+  width: 20px;
+  height: 14px;
+  object-fit: contain;
+  border-radius: 1px;
+}
+
+.scorerTeamFlag {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.scorerTeamName {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scorerNameText {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.scorerGoalsBadge {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--accent-gold);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+}
+
