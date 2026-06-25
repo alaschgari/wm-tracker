@@ -202,11 +202,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
             return tmp[a.length][b.length];
           };
 
-          const fuzzyMatch = (text: string, q: string): boolean => {
+          const fuzzyMatch = (text: string, q: string, isId = false): boolean => {
             const cleanText = text.toLowerCase().trim();
             const cleanQuery = q.toLowerCase().trim();
             if (cleanText.includes(cleanQuery)) return true;
-            if (cleanQuery.length < 3) return false;
+            
+            // Für Team-IDs (3-stellige Kürzel wie UZB, RSA) oder kurze Abfragen (< 4 Zeichen) erlauben wir keine Tippfehler
+            if (isId || cleanQuery.length < 4) {
+              return cleanText.startsWith(cleanQuery);
+            }
 
             const words = cleanText.split(/[\s-]+/);
             return words.some(word => {
@@ -216,12 +220,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
           };
 
           return (
-            fuzzyMatch(homeName, query) ||
-            fuzzyMatch(awayName, query) ||
-            fuzzyMatch(homeId, query) ||
-            fuzzyMatch(awayId, query) ||
-            fuzzyMatch(groupName, query) ||
-            fuzzyMatch(groupNameEn, query)
+            fuzzyMatch(homeName, query, false) ||
+            fuzzyMatch(awayName, query, false) ||
+            fuzzyMatch(homeId, query, true) ||
+            fuzzyMatch(awayId, query, true) ||
+            fuzzyMatch(groupName, query, false) ||
+            fuzzyMatch(groupNameEn, query, false)
           );
         }
 
