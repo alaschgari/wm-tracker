@@ -733,4 +733,191 @@ export const calculateTeamStats = (matches: Match[]): TeamScorerStats[] => {
     .sort((a, b) => b.totalGoals - a.totalGoals || a.teamId.localeCompare(b.teamId));
 };
 
+export interface FastestGoal {
+  scorer: string;
+  teamId: string;
+  minute: number;
+  matchId: number;
+  opponentId: string;
+}
 
+export interface LateGoal {
+  scorer: string;
+  teamId: string;
+  minute: number;
+  matchId: number;
+  opponentId: string;
+  scoreAfter: string;
+}
+
+export interface HighestScoringMatch {
+  matchId: number;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  totalGoals: number;
+  stage: string;
+}
+
+export interface BiggestWin {
+  matchId: number;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  difference: number;
+  winnerId: string;
+  stage: string;
+}
+
+export interface CleanSheetStats {
+  teamId: string;
+  cleanSheets: number;
+  played: number;
+}
+
+export interface GroupGoals {
+  group: string;
+  goals: number;
+}
+
+export const calculateAllStats = (matches: Match[]) => {
+  const fastestGoals: FastestGoal[] = [];
+  const lateGoals: LateGoal[] = [];
+  
+  let totalPenalties = 0;
+  let totalOwnGoals = 0;
+  const ownGoalsMap: Record<string, number> = {};
+  const penaltiesMap: Record<string, number> = {};
+
+  const cleanSheetsMap: Record<string, { cleanSheets: number; played: number }> = {};
+  const groupGoalsMap: Record<string, number> = {};
+  const highestScoringMatches: HighestScoringMatch[] = [];
+  const biggestWins: BiggestWin[] = [];
+
+  matches.forEach((m) => {
+    if (m.finished && m.homeScore !== null && m.awayScore !== null) {
+      if (!cleanSheetsMap[m.homeTeam]) cleanSheetsMap[m.homeTeam] = { cleanSheets: 0, played: 0 };
+      cleanSheetsMap[m.homeTeam].played += 1;
+      if (m.awayScore === 0) cleanSheetsMap[m.homeTeam].cleanSheets += 1;
+
+      if (!cleanSheetsMap[m.awayTeam]) cleanSheetsMap[m.awayTeam] = { cleanSheets: 0, played: 0 };
+      cleanSheetsMap[m.awayTeam].played += 1;
+      if (m.homeScore === 0) cleanSheetsMap[m.awayTeam].cleanSheets += 1;
+
+      const totalGoals = m.homeScore + m.awayScore;
+      highestScoringMatches.push({
+        matchId: m.id,
+        homeTeam: m.homeTeam,
+        awayTeam: m.awayTeam,
+        homeScore: m.homeScore,
+        awayScore: m.awayScore,
+        totalGoals,
+        stage: m.stage
+      });
+
+      const difference = Math.abs(m.homeScore - m.awayScore);
+      if (difference > 0) {
+        biggestWins.push({
+          matchId: m.id,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+          homeScore: m.homeScore,
+          awayScore: m.awayScore,
+          difference,
+          winnerId: m.homeScore > m.awayScore ? m.homeTeam : m.awayTeam,
+          stage: m.stage
+        });
+      }
+    }
+
+    if (m.goals && m.goals.length > 0) {
+      m.goals.forEach((g) => {
+        const teamId = g.isHome ? m.homeTeam : m.awayTeam;
+        const opponentId = g.isHome ? m.awayTeam : m.homeTeam;
+
+        if (m.stage === 'GROUP' && m.group) {
+          groupGoalsMap[m.group] = (groupGoalsMap[m.group] || 0) + 1;
+        }
+
+        if (g.minute <= 15 && !g.isOwnGoal) {
+          fastestGoals.push({
+            scorer: g.scorer,
+            teamId,
+            minute: g.minute,
+            matchId: m.id,
+            opponentId
+          });
+        }
+
+        if (g.minute >= 85 && !g.isOwnGoal) {
+          lateGoals.push({
+            scorer: g.scorer,
+            teamId,
+            minute: g.minute,
+            matchId: m.id,
+            opponentId,
+            scoreAfter: `${g.scoreHome}:${g.scoreAway}`
+          });
+        }
+
+        if (g.isPenalty) {
+          totalPenalties += 1;
+          penaltiesMap[teamId] = (penaltiesMap[teamId] || 0) + 1;
+        }
+
+        if (g.isOwnGoal) {
+          totalOwnGoals += 1;
+          ownGoalsMap[opponentId] = (ownGoalsMap[opponentId] || 0) + 1;
+        }
+      });
+    }
+  });
+
+  const sortedFastestGoals = fastestGoals.sort((a, b) => a.minute - b.minute).slice(0, 10);
+  const sortedLateGoals = lateGoals.sort((a, b) => b.minute - a.minute).slice(0, 10);
+
+  const teamsWithMostOwnGoals = Object.entries(ownGoalsMap)
+    .map(([teamId, count]) => ({ teamId, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const teamsWithMostPenalties = Object.entries(penaltiesMap)
+    .map(([teamId, count]) => ({ teamId, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const cleanSheets = Object.entries(cleanSheetsMap)
+    .map(([teamId, data]) => ({ teamId, cleanSheets: data.cleanSheets, played: data.played }))
+    .filter(t => t.cleanSheets > 0)
+    .sort((a, b) => b.cleanSheets - a.cleanSheets || b.cleanSheets/b.played - a.cleanSheets/a.played)
+    .slice(0, 10);
+
+  const groupGoals = Object.entries(groupGoalsMap)
+    .map(([group, goals]) => ({ group, goals }))
+    .sort((a, b) => b.goals - a.goals);
+
+  const sortedHighestScoring = highestScoringMatches
+    .sort((a, b) => b.totalGoals - a.totalGoals)
+    .slice(0, 8);
+
+  const sortedBiggestWins = biggestWins
+    .sort((a, b) => b.difference - a.difference)
+    .slice(0, 8);
+
+  return {
+    fastestGoals: sortedFastestGoals,
+    lateGoals: sortedLateGoals,
+    penaltiesOwnGoals: {
+      totalPenalties,
+      totalOwnGoals,
+      teamsWithMostOwnGoals,
+      teamsWithMostPenalties
+    },
+    cleanSheets,
+    groupGoals,
+    highestScoringMatches: sortedHighestScoring,
+    biggestWins: sortedBiggestWins
+  };
+};
