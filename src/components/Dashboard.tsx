@@ -20,6 +20,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
   const [activeStatsSubTab, setActiveStatsSubTab] = useState<'SCORERS' | 'GOALS' | 'MATCHES' | 'TEAMS'>('SCORERS');
   const [selectedGroup, setSelectedGroup] = useState<string>('ALL');
   const [selectedKnockoutStage, setSelectedKnockoutStage] = useState<Stage | 'ALL'>('ALL');
+  const [groupSearchQuery, setGroupSearchQuery] = useState<string>('');
   const [mounted, setMounted] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [language, setLanguage] = useState<Language>(() => {
@@ -158,13 +159,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
     return matches.filter((m) => {
       if (activeTab === 'GROUP') {
         if (m.stage !== 'GROUP') return false;
-        return selectedGroup === 'ALL' || m.group === selectedGroup;
+        
+        // Zuerst Gruppen-Filter
+        const matchesGroup = selectedGroup === 'ALL' || m.group === selectedGroup;
+        if (!matchesGroup) return false;
+
+        // Dann Suchbegriff-Filter (intelligente Suche)
+        if (groupSearchQuery.trim() !== '') {
+          const query = groupSearchQuery.toLowerCase().trim();
+          const homeTeamObj = currentTeams.find(t => t.id === m.homeTeam);
+          const awayTeamObj = currentTeams.find(t => t.id === m.awayTeam);
+          const homeName = (homeTeamObj?.name || m.homeTeam).toLowerCase();
+          const awayName = (awayTeamObj?.name || m.awayTeam).toLowerCase();
+          const homeId = m.homeTeam.toLowerCase();
+          const awayId = m.awayTeam.toLowerCase();
+          const groupName = `gruppe ${m.group}`.toLowerCase();
+          const groupNameEn = `group ${m.group}`.toLowerCase();
+
+          return (
+            homeName.includes(query) ||
+            awayName.includes(query) ||
+            homeId.includes(query) ||
+            awayId.includes(query) ||
+            groupName.includes(query) ||
+            groupNameEn.includes(query)
+          );
+        }
+
+        return true;
       } else {
         if (m.stage === 'GROUP') return false;
         return selectedKnockoutStage === 'ALL' || m.stage === selectedKnockoutStage;
       }
     });
-  }, [matches, activeTab, selectedGroup, selectedKnockoutStage]);
+  }, [matches, activeTab, selectedGroup, selectedKnockoutStage, groupSearchQuery, currentTeams]);
 
 
 
@@ -299,6 +327,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                   {g === 'ALL' ? t.allGroups : `${t.group} ${g}`}
                 </button>
               ))}
+            </div>
+
+            {/* Intelligenter Suchfilter */}
+            <div className={styles.searchBarContainer} style={{ marginBottom: '1.25rem', position: 'relative' }}>
+              <input
+                type="text"
+                placeholder={language === 'de' ? '🔍 Land suchen (z.B. "deu", "Deutschland")...' : '🔍 Search team (e.g. "GER", "Germany")...'}
+                value={groupSearchQuery}
+                onChange={(e) => setGroupSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+              {groupSearchQuery && (
+                <button
+                  onClick={() => setGroupSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    padding: '4px'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
             
             <div className={styles.matchesList}>
