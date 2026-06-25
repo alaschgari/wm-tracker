@@ -5,7 +5,7 @@ import { Match, Team, Stage } from '../types';
 import { MatchCard } from './MatchCard';
 import { GroupStandings } from './GroupStandings';
 import { TimeMatrix } from './TimeMatrix';
-import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi, calculateTeamStats } from '../services/dataService';
+import { calculateStandings, updateKnockoutMatches, fetchLiveMatchesFromApi, calculateTopScorers, calculateTeamStats } from '../services/dataService';
 import { TRANSLATIONS, Language } from '../data/translations';
 import styles from '../app/page.module.css';
 
@@ -142,6 +142,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
   // Berechne aktuelle Tabellen
   const standings = React.useMemo(() => calculateStandings(matches, currentTeams), [matches, currentTeams]);
+
+  // Berechne Topscorer
+  const topScorers = React.useMemo(() => calculateTopScorers(matches), [matches]);
 
   // Berechne Teamscorer-Statistiken
   const teamScorerStats = React.useMemo(() => calculateTeamStats(matches), [matches]);
@@ -371,9 +374,69 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
       )}
 
       {activeTab === 'SCORERS' && (
-        <div className={styles.layout}>
-          <div className={styles.scorersContainer}>
-            <h2 className={styles.sectionTitle}>{t.topScorers}</h2>
+        <div className={styles.scorersThreeColLayout}>
+          
+          {/* Spalte 1: Top-Torschützen (Einzelwertung) */}
+          <div className={styles.scorersColumn}>
+            <h2 className={styles.sectionTitle}>{language === 'de' ? 'Top-Torschützen' : 'Top Scorers'}</h2>
+            {topScorers.length === 0 ? (
+              <div className={styles.emptyState}>-</div>
+            ) : (
+              <div className={styles.scorersListCard}>
+                {topScorers.slice(0, 20).map((scorer, index) => {
+                  const team = currentTeams.find(t => t.id === scorer.teamId);
+                  return (
+                    <div key={scorer.name} className={styles.scorersListItem}>
+                      <span className={styles.scorerRank}>{index + 1}.</span>
+                      <div className={styles.scorerTeamInfo} style={{ minWidth: 'auto', marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                        {team?.iconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={team.iconUrl} alt="" className={styles.teamScorerLogo} style={{ width: '20px', height: '13px' }} />
+                        ) : (
+                          <span>{team?.flag || '🏳️'}</span>
+                        )}
+                      </div>
+                      <span className={styles.scorerNameText} style={{ flex: 1, fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>{scorer.name}</span>
+                      <span className={styles.teamGoalsBadge} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>{scorer.goals}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Spalte 2: Team-Tore (Mannschaftswertung) */}
+          <div className={styles.scorersColumn}>
+            <h2 className={styles.sectionTitle}>{language === 'de' ? 'Team-Tore' : 'Team Goals'}</h2>
+            {teamScorerStats.length === 0 ? (
+              <div className={styles.emptyState}>-</div>
+            ) : (
+              <div className={styles.scorersListCard}>
+                {teamScorerStats.map((teamStats, index) => {
+                  const team = currentTeams.find(t => t.id === teamStats.teamId);
+                  return (
+                    <div key={teamStats.teamId} className={styles.scorersListItem}>
+                      <span className={styles.scorerRank}>{index + 1}.</span>
+                      <div className={styles.scorerTeamInfo} style={{ flex: 1, minWidth: 'auto', display: 'flex', alignItems: 'center' }}>
+                        {team?.iconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={team.iconUrl} alt="" className={styles.teamScorerLogo} style={{ width: '20px', height: '13px' }} />
+                        ) : (
+                          <span>{team?.flag || '🏳️'}</span>
+                        )}
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, marginLeft: '0.5rem', color: 'var(--text-primary)' }}>{team?.name || teamStats.teamId}</span>
+                      </div>
+                      <span className={styles.teamGoalsBadge} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>{teamStats.totalGoals}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Spalte 3: Top-Schützen pro Land */}
+          <div className={styles.scorersColumn}>
+            <h2 className={styles.sectionTitle}>{language === 'de' ? 'Top-Schützen pro Land' : 'Top Scorers per Team'}</h2>
             {teamScorerStats.length === 0 ? (
               <div className={styles.emptyState}>-</div>
             ) : (
@@ -381,8 +444,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                 {teamScorerStats.map((teamStats, index) => {
                   const team = currentTeams.find(t => t.id === teamStats.teamId);
                   return (
-                    <div key={teamStats.teamId} className={styles.teamScorerCard}>
-                      <div className={styles.teamScorerHeader}>
+                    <div key={teamStats.teamId} className={styles.teamScorerCard} style={{ padding: '0.85rem' }}>
+                      <div className={styles.teamScorerHeader} style={{ borderBottom: 'none', paddingBottom: 0 }}>
                         <div className={styles.teamScorerInfo}>
                           <span className={styles.teamScorerRank}>{index + 1}.</span>
                           {team?.iconUrl ? (
@@ -393,14 +456,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
                           )}
                           <span className={styles.teamScorerName}>{team?.name || teamStats.teamId}</span>
                         </div>
-                        <span className={styles.teamGoalsBadge}>
-                          {teamStats.totalGoals} {teamStats.totalGoals === 1 ? (language === 'de' ? 'Tor' : 'Goal') : (language === 'de' ? 'Tore' : 'Goals')}
-                        </span>
                       </div>
                       
-                      <div className={styles.playerScorersList}>
+                      <div className={styles.playerScorersList} style={{ marginTop: '0.5rem', paddingTop: '0.5rem' }}>
                         {teamStats.scorers.map((player) => (
-                          <div key={player.name} className={styles.playerScorerItem}>
+                          <div key={player.name} className={styles.playerScorerItem} style={{ fontSize: '0.75rem' }}>
                             <span className={styles.playerScorerBullet}>•</span>
                             <span className={styles.playerScorerName}>{player.name}</span>
                             <span className={styles.playerScorerGoals}>({player.goals})</span>
@@ -413,6 +473,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
               </div>
             )}
           </div>
+
         </div>
       )}
     </div>
