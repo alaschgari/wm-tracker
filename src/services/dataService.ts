@@ -439,12 +439,12 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
       const processTeam = (t: OpenLigaTeam | null) => {
         if (!t) return;
         const id = t.shortName || t.teamName;
-        if (!teamsMap[id]) {
+        if (OFFICIAL_GROUPS[id] && !teamsMap[id]) {
           teamsMap[id] = {
             id,
             name: t.teamName,
             flag: EMOJI_MAP[id] || '🏳️',
-            group: OFFICIAL_GROUPS[id] || 'A'
+            group: OFFICIAL_GROUPS[id]
           };
         }
       };
