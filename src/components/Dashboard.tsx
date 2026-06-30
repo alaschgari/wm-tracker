@@ -90,7 +90,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ initialMatches, teams }) =
 
   // Initialisiere Matches und Teams aus API (Live-Daten), localStorage oder Props
   useEffect(() => {
-    const APP_VERSION = '1.2';
+    const APP_VERSION = '1.3';
     const savedVersion = localStorage.getItem('wm_2026_version');
     if (savedVersion !== APP_VERSION) {
       localStorage.removeItem('wm_2026_matches');
