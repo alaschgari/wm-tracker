@@ -29,6 +29,7 @@ interface OpenLigaGoal {
   isPenalty: boolean;
   isOwnGoal: boolean;
   isOvertime: boolean;
+  scoringTeamId?: number;
 }
 
 interface OpenLigaMatch {
@@ -303,11 +304,20 @@ export const fetchLiveMatches = async (): Promise<{ matches: Match[]; teams: Tea
         }
       }
 
-      const apiGoals = m.goals ? [...m.goals].sort((a, b) => a.matchMinute - b.matchMinute) : [];
+      const apiGoals = m.goals ? [...m.goals].sort((a, b) => (a.matchMinute || 0) - (b.matchMinute || 0)) : [];
+      // Filter out shootout goals (where matchMinute is null/undefined)
+      const normalGoals = apiGoals.filter((g) => g.matchMinute !== null && g.matchMinute !== undefined);
+      
       let prevHomeScore = 0;
-      const goals = apiGoals.map((g: OpenLigaGoal) => {
-        const isHome = g.scoreTeam1 > prevHomeScore;
+      const goals = normalGoals.map((g: OpenLigaGoal) => {
+        let isHome = false;
+        if (g.scoringTeamId !== undefined && m.team1) {
+          isHome = g.scoringTeamId === m.team1.teamId;
+        } else {
+          isHome = g.scoreTeam1 > prevHomeScore;
+        }
         prevHomeScore = g.scoreTeam1;
+        
         return {
           id: g.goalID,
           scoreHome: g.scoreTeam1,
