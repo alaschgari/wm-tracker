@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FIFA World Cup Tracker 2026
 
-## Getting Started
+Eine Next.js-Webanwendung zum Verfolgen der Fußball-Weltmeisterschaft 2026: Gruppentabellen, Spielplan, K.-o.-Baum und Team-Details – live und offline nutzbar.
 
-First, run the development server:
+🇬🇧 [English README](README.en.md)
+
+## Features
+
+- **Gruppenphase-Tabellen** – aktuelle Standings pro Gruppe
+- **Spielplan & Ergebnisse** – Spielkarten mit Zeitangaben
+- **Visueller K.-o.-Baum** – Turnierverlauf von Achtelfinale bis Finale
+- **Team-Details** – Modal mit Kader- und Team-Informationen
+- **Fuzzy-Suche** – Teams schnell finden, auch bei Tippfehlern
+- **Offline-fähig** – Service Worker für Nutzung ohne Internetverbindung
+- **Mehrsprachig** – Übersetzungen für die Oberfläche
+
+## Erste Schritte
+
+Entwicklungsserver starten:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Anschließend [http://localhost:3000](http://localhost:3000) im Browser öffnen.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Technologie
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [Next.js](https://nextjs.org) (App Router)
+- TypeScript
+- CSS Modules
 
-## Learn More
+## Projektstruktur
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/           # Next.js App Router, inkl. API-Routen (/api/matches)
+  components/    # UI-Komponenten (Dashboard, GroupStandings, KnockoutBracket, ...)
+  data/          # Statische Daten & Übersetzungen
+  services/       # Datenzugriff & Hilfsfunktionen (Kalender, Datenservice)
+  types/         # TypeScript-Typdefinitionen
+```
